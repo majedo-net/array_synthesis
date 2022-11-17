@@ -1,0 +1,6 @@
+matplotlib
+cython
+setuptools
+numpy
+scipy
+pyswarms

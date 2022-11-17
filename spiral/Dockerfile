@@ -1,4 +1,4 @@
-FROM 10.2.10.230:5000/openems:v1.1
+FROM openems:latest
 WORKDIR "/"
 COPY spiral.m ./
 COPY entry.py ./

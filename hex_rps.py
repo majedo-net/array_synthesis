@@ -16,7 +16,10 @@ def hex_count(len_d, elements=0):
 
 def rps(fmax,r,N):
     d0 = (3e8/fmax)/2
-    xi = 1/((N**r) - (N-1)**r)
+    if r >=1:
+        xi = 1
+    else:
+        xi = 1/((N**r) - (N-1)**r)
     d= np.zeros(N+1)
     for n in range(N+1):
         d[n] = d0*xi*(n+1)**r 
@@ -42,7 +45,8 @@ def hex_positions(d):
     xs = [None] * hex_count(len(d))
     ys = [None] * hex_count(len(d))
     for n,dn in enumerate(d):
-        dnsq = np.sqrt((dn**2)/2)
+        #dnsq = np.sqrt((dn**2)/2)
+        dnsq = dn/2
         if n==0:
             xs[0] = dn 
             ys[0] = 0
@@ -57,8 +61,10 @@ def hex_positions(d):
             xs[5] = dnsq
             ys[5] = -dnsq
         else:
-            xs[hex_count(n)] = dn * ((n+1)/2) + dnsq * (n+1)
+            xs[hex_count(n)] = dn 
             ys[hex_count(n)] = 0
+            dn =  d[n]/(n+1)
+            dnsq = d[n]/(n+1)/2
             for i in range(hex_count(n)+1,hex_count(n)+(n+2)):
                 xs[i] = xs[i-1] - dnsq
                 ys[i] = ys[i-1] + dnsq
@@ -77,15 +83,18 @@ def hex_positions(d):
             for i in range(hex_count(n)+(5*n+6),hex_count(n+1)):
                 xs[i] = xs[i-1] + dnsq
                 ys[i] = ys[i-1] + dnsq
+    
+    xs = np.insert(xs,0,0)
+    ys = np.insert(ys,0,0)
     return xs,ys
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    d= rps(3e9,0.89,3)
+    d= rps(3e9,1.8,3)
     xs, ys = hex_positions(d)
-    xs = np.insert(xs,0,0)
-    ys = np.insert(ys,0,0)
-    rs = np.array([1.2,-10.3,-1.58,12.58])
-    xs,ys = rotate(xs,ys,rs,d)
+    rs = np.array([2,-10.3,-1.58,12.58])
+    #xs,ys = rotate(xs,ys,rs,d)
     plt.scatter(xs,ys)
     plt.grid()
+    ax = plt.gca()
+    ax.set_aspect('equal','box')
     plt.show()

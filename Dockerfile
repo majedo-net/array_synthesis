@@ -1,9 +1,13 @@
-FROM 10.2.10.230:5000/openems:v1.1
-WORKDIR "/"
-COPY spiral.m ./
-COPY entry.py ./
-COPY hex_rps.py ./
-COPY array_funcs.py ./
-RUN pwd
-RUN pip3 install pyswarms
-ENTRYPOINT python3 entry.py 
+FROM openems:latest
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+WORKDIR /app
+COPY . /app
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
+CMD ["python3", "entry.py"]

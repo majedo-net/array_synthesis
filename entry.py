@@ -1,5 +1,7 @@
 import pyswarms as ps
 import numpy as np
+from matplotlib.pyplot import *
+from matplotlib.patches import Circle
 import subprocess,os,fileinput,re,shutil
 from hex_rps import *
 from array_funcs import *
@@ -10,7 +12,7 @@ def init_swarm(n):
     mins = np.ones(5)
     maxes = np.ones(5)
     bounds = (mins, maxes)
-    mins[0],maxes[0] = 0.1,1.3 # r bounds
+    mins[0],maxes[0] = 1,2 # r bounds
     mins[1],maxes[1] = -20,20 # rotation angle bounds
     mins[2],maxes[2] = -20,20 # rotation angle bounds
     mins[3],maxes[3] = -20,20 # rotation angle bounds
@@ -26,13 +28,34 @@ def compute_costs(pos):
         costs[n] = cost_function(rs[n],thetas[n])
     return costs 
 
-def cost_function(r,thetas):
+def cost_function(r,thetas,plots=False):
     N = 3
     fmax = 3e9
     fmin = 0.35e9
     d = rps(fmax,r,N)
+    spirads = d
+    spirads[1:] = (d[1:]-d[0:-1])
+    spirads = np.sqrt(2*spirads**2)/4
+    d = rps(fmax,r,N)
     xs, ys = hex_positions(d)
     xs, ys = rotate(xs,ys,thetas,d)
+    circs = [None]*len(xs)
+    if plots:
+        fig,ax = subplots()
+        ax.set_xlim(xmin=-np.max(d)*1.5,xmax=np.max(d)*1.5)
+        xmax = 1.1*np.max(xs)+np.max(spirads)
+        ymax = 1.1*np.max(ys)+np.max(spirads)
+        ax.axis([-xmax, xmax, -ymax, ymax])
+        dind = 1
+        for i in range(len(xs)):
+            circs[i] = Circle((xs[i],ys[i]),spirads[dind-1],facecolor='blue',edgecolor='k')
+            ax.add_patch(circs[i])
+            if i >= hex_count(dind):
+                dind+=1
+        ax.grid()
+        ax.set_aspect('equal','box')
+        fig.savefig('circles.png')
+
     element_pattern_max = np.ones(len(xs))
     element_pattern_min = np.ones(len(xs))
     freq = fmax * (1+np.sin(60*np.pi/180))
@@ -62,8 +85,9 @@ def invoke_openems():
    return
 
 if __name__ == '__main__':
-    n_particles = 20
-    n_iterations = 200
+    n_particles = 3
+    n_iterations =10 
     swarm=init_swarm(n_particles)
     cost,pos = swarm.optimize(compute_costs,n_iterations)
-    with open('results/optimized',mode='w') as f: f.write(f'cost: {cost} \n pos: {pos}')
+    cost_function(pos[0],pos[1:-1],plots=True)
+    #with open('results/optimized',mode='w') as f: f.write(f'cost: {cost} \n pos: {pos}')
