@@ -2,8 +2,10 @@ import pyswarms as ps
 import numpy as np
 from matplotlib.pyplot import *
 from matplotlib.patches import Circle
+from scipy.spatial import KDTree
 import subprocess,os,fileinput,re,shutil
 from hex_rps import *
+from circ_rps import *
 from array_funcs import *
 regex = re.compile(r'\d+')
 
@@ -33,13 +35,12 @@ def cost_function(r,thetas,plots=False):
     fmax = 3e9
     fmin = 0.35e9
     d = rps(fmax,r,N)
-    spirads = d
-    spirads[1:] = (d[1:]-d[0:-1])
-    spirads = np.sqrt(2*spirads**2)/4
-    d = rps(fmax,r,N)
-    xs, ys = hex_positions(d)
+    xs, ys = circ_positions(d)
     xs, ys = rotate(xs,ys,thetas,d)
     circs = [None]*len(xs)
+    points = list(zip(xs.ravel(),ys.ravel()))
+    spirads = KDTree(points).query(points,k=[2])[0].flatten()
+    spirads = spirads/2
     if plots:
         fig,ax = subplots()
         ax.set_xlim(xmin=-np.max(d)*1.5,xmax=np.max(d)*1.5)
@@ -48,10 +49,8 @@ def cost_function(r,thetas,plots=False):
         ax.axis([-xmax, xmax, -ymax, ymax])
         dind = 1
         for i in range(len(xs)):
-            circs[i] = Circle((xs[i],ys[i]),spirads[dind-1],facecolor='blue',edgecolor='k')
+            circs[i] = Circle((xs[i],ys[i]),spirads[i],facecolor='blue',edgecolor='k')
             ax.add_patch(circs[i])
-            if i >= hex_count(dind):
-                dind+=1
         ax.grid()
         ax.set_aspect('equal','box')
         fig.savefig('circles.png')
