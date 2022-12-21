@@ -43,6 +43,8 @@ def check_element_patterns(spirads,freq):
     h = 30 #mm
     spirads = np.around(spirads*1000,0)
     freq = np.around(freq/1e6,-1)
+    print('=============================================\n')
+    print(f'New Simulations required for this iteration:\n')
     for rad in np.unique(spirads):
         patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(1000*rad,0))}_freq_{int(np.around(freq/1e6,-1))}.csv'
         # if the pattern file already exists, just copy it into the element pattern array
@@ -50,20 +52,20 @@ def check_element_patterns(spirads,freq):
         if os.path.exists(patt_path):
             continue
         else:
+            print(patt_path)
             with open('commands.txt',mode='a+') as f:
                 f.write(f'octave --silent spiral.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} \n')
                 Np += 1
-
-    print('=============================================\n')
-    print(f'New Simulations required for this iteration: {Np}\n')
+    
     print('=============================================\n')
 
 def fetch_element_patterns(spirads,freq):
     patterns = []
     for i,rad in enumerate(spirads):
         patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(1000*rad,0))}_freq_{int(np.around(freq/1e6,-1))}.csv'
-        patterns.append(np.genfromtxt(patt_path,skip_header=1))
+        patterns.append(np.genfromtxt(patt_path,delimiter=','))
         return patterns
+
 def cost_function(r,thetas,plots=False):
     N = 3
     fmax = 1e9
