@@ -46,7 +46,7 @@ def check_element_patterns(spirads,freq):
     print('=============================================\n')
     print(f'New Simulations required for this iteration:\n')
     for rad in np.unique(spirads):
-        patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(1000*rad,0))}_freq_{int(np.around(freq/1e6,-1))}.csv'
+        patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(freq)}.csv'
         # if the pattern file already exists, just copy it into the element pattern array
         # if file size gets unwieldy we may need to only store uniques for this too
         if os.path.exists(patt_path):
@@ -56,7 +56,7 @@ def check_element_patterns(spirads,freq):
             with open('commands.txt',mode='a+') as f:
                 f.write(f'octave --silent spiral.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} \n')
                 Np += 1
-    
+
     print('=============================================\n')
 
 def fetch_element_patterns(spirads,freq):
