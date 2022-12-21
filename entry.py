@@ -62,9 +62,9 @@ def check_element_patterns(spirads,freq):
 def fetch_element_patterns(spirads,freq):
     patterns = []
     for i,rad in enumerate(spirads):
-        patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(1000*rad,0))}_freq_{int(np.around(freq/1e6,-1))}.csv'
+        patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(np.around(freq/1e6,-1))}.csv'
         patterns.append(np.genfromtxt(patt_path,delimiter=','))
-        return patterns
+    return patterns
 
 def cost_function(r,thetas,plots=False):
     N = 3
