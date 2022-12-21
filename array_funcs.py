@@ -14,7 +14,7 @@ def array_factor(xs, ys,k, f,theta,phi):
         yvec = ys[i]*np.outer(np.sin(theta),np.sin(phi))
         ArrF += np.exp(1j*k*(xvec + yvec))
     if np.shape(ArrF) != np.shape(f):
-        print('Element pattern data is different shape from Theta x Phi')
+        print(f'Element pattern data (shape: {np.shape(f)}) is different shape from Theta x Phi (shape: {np.shape(ArrF)}')
     else:
         ArrF += f
     return np.abs(ArrF)
