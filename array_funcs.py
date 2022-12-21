@@ -13,7 +13,10 @@ def array_factor(xs, ys,k, f,theta,phi):
         xvec = xs[i]*np.outer(np.cos(theta),np.cos(phi))
         yvec = ys[i]*np.outer(np.sin(theta),np.sin(phi))
         ArrF += np.exp(1j*k*(xvec + yvec))
-    
+    if np.shape(ArrF) != np.shape(f):
+        print('Element pattern data is different shape from Theta x Phi')
+    else:
+        ArrF += f
     return np.abs(ArrF)
 
 def BeamCost(des_bw,meas_bw,sll,theta,phi,Arrf):

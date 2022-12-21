@@ -2,5 +2,5 @@ matplotlib
 cython
 setuptools
 numpy
-scipy
+scipy==1.9.3
 pyswarms
