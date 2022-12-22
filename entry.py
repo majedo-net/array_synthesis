@@ -8,6 +8,7 @@ import subprocess,os,fileinput,re,shutil
 from hex_rps import *
 from circ_rps import *
 from array_funcs import *
+from ArrayElementException import ArrayElementException
 regex = re.compile(r'\d+')
 
 def init_swarm(n):
@@ -46,6 +47,8 @@ def check_element_patterns(spirads,freq):
     print('=============================================\n')
     print(f'New Simulations required for this iteration:\n')
     for rad in np.unique(spirads):
+        if rad < 10:
+            raise ArrayElementException(message='Element radius <10cm, 1000 cost assigned')
         patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(freq)}.csv'
         # if the pattern file already exists, just copy it into the element pattern array
         # if file size gets unwieldy we may need to only store uniques for this too
@@ -93,10 +96,15 @@ def cost_function(r,thetas,plots=False):
         print(np.unique(spirads))
 
     freq = fmax * (1+np.sin(60*np.pi/180))
-    check_element_patterns(spirads,freq)
-    invoke_openems()
-    check_element_patterns(spirads,fmin)
-    invoke_openems()
+    try:
+        check_element_patterns(spirads,freq)
+        invoke_openems()
+        check_element_patterns(spirads,fmin)
+        invoke_openems()
+    except ArrayElementException as e:
+        print(e)
+        cost = 100000
+        return cost
     element_pattern_max = fetch_element_patterns(spirads,freq)
     element_pattern_min = fetch_element_patterns(spirads,fmin)
     lam_max = 3e8/freq

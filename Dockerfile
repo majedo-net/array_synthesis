@@ -11,4 +11,5 @@ COPY spiral/spiral.m .
 COPY circ_rps.py .
 COPY hex_rps.py .
 COPY array_funcs.py .
+COPY ArrayElementException.py .
 ENTRYPOINT python3 entry.py
