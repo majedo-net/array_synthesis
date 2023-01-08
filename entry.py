@@ -29,7 +29,7 @@ def compute_costs(pos):
     thetas = pos[:,1:4]
     costs = np.ones(len(rs))
     for n in range(len(rs)):
-        costs[n] = cost_function(rs[n],thetas[n])
+        costs[n] = cost_function(rs[n],thetas[n],n)
     return costs 
 
 def check_element_patterns(spirads,freq):
@@ -65,11 +65,12 @@ def check_element_patterns(spirads,freq):
 def fetch_element_patterns(spirads,freq):
     patterns = []
     for i,rad in enumerate(spirads):
+        rad = rad*1000
         patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(np.around(freq/1e6,-1))}.csv'
         patterns.append(np.genfromtxt(patt_path,delimiter=','))
     return patterns
 
-def cost_function(r,thetas,plots=False):
+def cost_function(r,thetas,n_particle,plots=False):
     N = 3
     fmax = 1e9
     fmin = 0.5e9
