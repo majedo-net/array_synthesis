@@ -116,5 +116,5 @@ thetas = linspace(-pi/2, pi/2, 181);
 phis = linspace(0,pi/2,181);
 nf2ff = CalcNF2FF(nf2ff, Sim_Path, freq,thetas, phis,'Verbose',0);
 G = cell2mat(nf2ff.E_norm);
-csvwrite(sprintf('/results/ff/farfieldspiral_rad_%d_freq_%d.csv', rmax,freq/1e6), G);
+csvwrite(sprintf('/results/ff/farfieldspiral_rad_%d_freq_%d_height_%d.csv', rmax,freq/1e6,h), G);
 [status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory

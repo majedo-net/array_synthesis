@@ -13,35 +13,45 @@ regex = re.compile(r'\d+')
 
 def init_swarm(n):
     options = {'c1': 0.5, 'c2': 0.3, 'w':0.3}
-    mins = np.ones(5)
-    maxes = np.ones(5)
+    mins = np.ones(6)
+    maxes = np.ones(6)
     bounds = (mins, maxes)
     mins[0],maxes[0] = 0.1,2 # r bounds
     mins[1],maxes[1] = -20,20 # rotation angle bounds
     mins[2],maxes[2] = -20,20 # rotation angle bounds
     mins[3],maxes[3] = -20,20 # rotation angle bounds
     mins[4],maxes[4] = -20,20 # rotation angle bounds
-    optimizer = ps.single.GlobalBestPSO(n_particles=n,dimensions=5, options=options, bounds=bounds)
+    mins[5],maxes[5] = 10,50 # Ground plane height bounds
+    optimizer = ps.single.GlobalBestPSO(n_particles=n,dimensions=6, options=options, bounds=bounds)
     return optimizer
 
 def compute_costs(pos):
     rs = pos[:,0]
     thetas = pos[:,1:4]
+    hs = pos[:,5]
     costs = np.ones(len(rs))
     for n in range(len(rs)):
-        costs[n] = cost_function(rs[n],thetas[n],n)
+        hs[n] = int(hs[n])
+        costs[n] = cost_function(rs[n],thetas[n],hs[n])
     return costs 
 
-def check_element_patterns(spirads,freq):
+def check_completion(paths):
+    not_complete = True
+    while(not_complete):
+        not_complete = False
+        for p in paths:
+            if os.path.exists(p) == False:
+                not_complete = True
+
+def check_element_patterns(spirads,h,freq):
     if not os.path.exists('/results/ff'):
         os.mkdir('/results/ff')
-    patterns = []
+    new_patterns = []
     Np = 0 # an index for keeping track of any new simulations we have to run
 
     # some spiral parameters. Load these from a file eventually...
     r0 = 5 #mm
     alpha = 0.32
-    h = 30 #mm
     spirads = np.around(spirads*1000,0)
     freq = np.around(freq/1e6,-1)
     print('=============================================\n')
@@ -49,30 +59,34 @@ def check_element_patterns(spirads,freq):
     for rad in np.unique(spirads):
         if rad < 10:
             raise ArrayElementException(message='Element radius <10cm, 1000 cost assigned')
-        patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(freq)}.csv'
+        patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(freq)}_height_{h}.csv'
         # if the pattern file already exists, just copy it into the element pattern array
         # if file size gets unwieldy we may need to only store uniques for this too
         if os.path.exists(patt_path):
             continue
         else:
             print(patt_path)
+            new_patterns.append(patt_path)
             with open('commands.txt',mode='a+') as f:
                 f.write(f'octave --silent spiral.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} \n')
                 Np += 1
 
     print('=============================================\n')
+    return new_patterns
 
-def fetch_element_patterns(spirads,freq):
+def fetch_element_patterns(spirads,freq,h):
     patterns = []
     for i,rad in enumerate(spirads):
         rad = rad*1000
-        patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(np.around(freq/1e6,-1))}.csv'
-        patterns.append(np.genfromtxt(patt_path,delimiter=','))
+        patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(np.around(freq/1e6,-1))}_height_{h}.csv'
+        patt=np.genfromtxt(patt_path,delimiter=',')
+        patt = patt / np.amax(patt)
+        patterns.append(patt)
     return patterns
 
-def cost_function(r,thetas,n_particle,plots=False):
+def cost_function(r,thetas,h,plots=False):
     N = 3
-    fmax = 1e9
+    fmax = 2.3e9
     fmin = 0.5e9
     d = rps(fmax,r,N)
     xs, ys = circ_positions(d)
@@ -98,14 +112,15 @@ def cost_function(r,thetas,n_particle,plots=False):
 
     freq = fmax * (1+np.sin(60*np.pi/180))
     try:
-        check_element_patterns(spirads,freq)
-        invoke_openems()
-        check_element_patterns(spirads,fmin)
+        np1=check_element_patterns(spirads,h,freq)
+        np2=check_element_patterns(spirads,h,fmin)
+        new_patts = np1 + np2
         invoke_openems()
     except ArrayElementException as e:
         print(e)
         cost = 100000
         return cost
+    check_completion(new_patts)
     element_pattern_max = fetch_element_patterns(spirads,freq)
     element_pattern_min = fetch_element_patterns(spirads,fmin)
     lam_max = 3e8/freq
@@ -114,8 +129,8 @@ def cost_function(r,thetas,n_particle,plots=False):
     k_min = 2*np.pi/lam_min
     theta = np.linspace(-np.pi/2, np.pi/2, 181)
     phi = np.linspace(0, np.pi, 181)
-    ArrF_max = array_factor(xs,ys,k_max,element_pattern_max,theta,phi)
-    ArrF_min = array_factor(xs,ys,k_min,element_pattern_min,theta,phi)
+    ArrF_max, Tot_max = array_factor(xs,ys,k_max,element_pattern_max,theta,phi)
+    ArrF_min, Tot_min = array_factor(xs,ys,k_min,element_pattern_min,theta,phi)
     des_bw = 35
     sll = -5
     meas_bw = Beamwidth(theta,ArrF_max)
@@ -123,21 +138,29 @@ def cost_function(r,thetas,n_particle,plots=False):
     meas_bw = Beamwidth(theta,ArrF_min)
     costmin = BeamCost(des_bw,meas_bw,sll,theta,phi,ArrF_min)
     cost = costmin + costmax
-
+    makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,save=True)
     return cost
 
 def invoke_openems():
-    proc=subprocess.Popen("parallel -j15 < commands.txt",shell=True)
-    while proc.poll() is None:
-        pass
+    if os.path.exists('commands.txt'):
+        proc=subprocess.Popen("parallel -j15 < commands.txt",shell=True)
+        proc.wait()
+        #while proc.poll() is None:
+            #pass
+        #print('FDTD Complete, starting NF2FF... \n')
+        #while proc.poll() is None:
+            #pass
 
-    os.remove('commands.txt')
-    return
+        os.remove('commands.txt')
+        return
+    else:
+        print('No new sims\n')
+        return
 
 if __name__ == '__main__':
-    n_particles = 1
-    n_iterations = 2
+    n_particles =5 
+    n_iterations = 10
     swarm=init_swarm(n_particles)
     cost,pos = swarm.optimize(compute_costs,n_iterations)
-    cost_function(pos[0],pos[1:-1],plots=True)
+    cost_function(pos[0],pos[1:-1],n_particles,plots=True)
     #with open('results/optimized',mode='w') as f: f.write(f'cost: {cost} \n pos: {pos}')

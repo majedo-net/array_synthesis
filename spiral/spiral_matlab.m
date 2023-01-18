@@ -1,10 +1,10 @@
 clear;
 %disp(size(args));
-freq = 1e9;
+freq = 0.5e9;
 r0 = 5; % minimum inner spiral radius
 alpha = 0.32; % exponential spiral coefficient
-h = 30; % height above gorund plane
-rmax = 180; % max radius
+h = 20; % height above gorund plane
+rmax = 70; % max radius
 nP = 0; % simeoultaneous sim index
 r0
 rmax
@@ -110,8 +110,11 @@ RunOpenEMS(Sim_Path, Sim_CSX);
 % calculate the far field at phi=0 degrees and at phi=90 degrees
 disp( 'calculating far field' );
 thetas = linspace(-pi/2, pi/2, 181);
-phis = linspace(0,pi/2,91);
-nf2ff = CalcNF2FF(nf2ff, Sim_Path, freq, 0, 0,'Verbose',1);
+phis = linspace(0,pi,91);
+nf2ff = CalcNF2FF(nf2ff, Sim_Path, freq, thetas, phis,'Verbose',1);
 G = cell2mat(nf2ff.E_norm);
 csvwrite(sprintf('farfieldspiral_rad_%d_freq_%d.csv', rmax,freq/1e6), G);
+[el,az] = meshgrid(thetas,phis);
+[X,Y,Z] = sph2cart(az,(el-pi/2),G');
+surf(X,Y,Z);
 [status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory
