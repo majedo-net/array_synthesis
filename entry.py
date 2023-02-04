@@ -40,8 +40,12 @@ def check_completion(paths):
     while(not_complete):
         not_complete = False
         for p in paths:
-            if os.path.exists(p) == False:
-                not_complete = True
+            try:
+                exists = os.path.exists(p)
+                if exists==False:
+                    not_complete=True
+            except:
+                pass
 
 def check_element_patterns(spirads,h,freq):
     if not os.path.exists('/results/ff'):
@@ -89,6 +93,7 @@ def cost_function(r,thetas,h,plots=False):
     fmax = 2.3e9
     fmin = 0.5e9
     d = rps(fmax,r,N)
+    h=int(h)
     xs, ys = circ_positions(d)
     xs, ys = rotate(xs,ys,thetas,d)
     circs = [None]*len(xs)
@@ -145,12 +150,6 @@ def invoke_openems():
     if os.path.exists('commands.txt'):
         proc=subprocess.Popen("parallel -j15 < commands.txt",shell=True)
         proc.wait()
-        #while proc.poll() is None:
-            #pass
-        #print('FDTD Complete, starting NF2FF... \n')
-        #while proc.poll() is None:
-            #pass
-
         os.remove('commands.txt')
         return
     else:
