@@ -149,7 +149,8 @@ def cost_function(r,thetas,h,plots=False):
 def invoke_openems():
     if os.path.exists('commands.txt'):
         proc=subprocess.Popen("parallel -j15 < commands.txt",shell=True)
-        proc.wait()
+        while proc.poll() is None:
+            pass
         os.remove('commands.txt')
         return
     else:
