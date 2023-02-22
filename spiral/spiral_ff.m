@@ -1,4 +1,4 @@
-function spiral
+function spiral_ff
 addpath('/opt/openEMS/share/openEMS/matlab');
 addpath('/opt/openEMS/share/CSXCAD/matlab');
 args = argv();
@@ -9,7 +9,7 @@ alpha = str2num(args{3,1}); % exponential spiral coefficient
 h = str2num(args{4,1}); % height above gorund plane
 rmax = str2num(args{5,1}); % max radius
 nP = str2num(args{6,1}); % simeoultaneous sim index
-nF = str2num(args{7,1}); % frequency index
+nF = str2num(args{7,1}) % frequency index
 r0
 rmax
 %% setup the simulation
@@ -94,16 +94,13 @@ stop  = [mesh.x(end-9) mesh.y(end-9) mesh.z(end-9)];
 [CSX, nf2ff] = CreateNF2FFBox(CSX, 'nf2ff', start, stop, 'Directions', [1 1 1 1 0 1]);
 
 %% prepare simulation folder
-Sim_Path = sprintf('tmp_spiral%d_%d',nP,nF);
+Sim_Path = sprintf('tmp_spiral%d_%d',nF,nP)
 Sim_CSX = 'spiral_ant.xml';
-
+% calculate the far field at phi=0 degrees and at phi=90 degrees
+disp( 'calculating far field' );
+thetas = linspace(-pi/2, pi/2, 181);
+phis = linspace(0,pi/2,181);
+nf2ff = CalcNF2FF(nf2ff, Sim_Path, freq,thetas, phis,'Verbose',0);
+G = cell2mat(nf2ff.E_norm);
+csvwrite(sprintf('/results/ff/farfieldspiral_rad_%d_freq_%d_height_%d.csv', rmax,freq/1e6,h), G);
 [status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory
-[status, message, messageid] = mkdir( Sim_Path ); % create empty simulation folder
-
-%% write openEMS compatible xml-file
-WriteOpenEMS([Sim_Path '/' Sim_CSX], FDTD, CSX);
-
-%% run openEMS
-Settings.Silent = 0;
-RunOpenEMS(Sim_Path, Sim_CSX);
-

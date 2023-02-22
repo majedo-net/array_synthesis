@@ -1,7 +1,7 @@
 
 
 build:
-	docker build -t array_synth:latest .
+	podman build -t array_synth:latest .
 
 run:
-	docker run --privileged -it -v C:\Users\mattj\Documents\CSM\array_synthesis\results:/results array_synth:latest
+	podman run --privileged -it -v /data/pso_results:/results array_synth:latest

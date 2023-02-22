@@ -47,11 +47,10 @@ def check_completion(paths):
             except:
                 pass
 
-def check_element_patterns(spirads,h,freq):
+def check_element_patterns(spirads,h,freq,Np=0):
     if not os.path.exists('/results/ff'):
         os.mkdir('/results/ff')
     new_patterns = []
-    Np = 0 # an index for keeping track of any new simulations we have to run
 
     # some spiral parameters. Load these from a file eventually...
     r0 = 5 #mm
@@ -71,9 +70,14 @@ def check_element_patterns(spirads,h,freq):
         else:
             print(patt_path)
             new_patterns.append(patt_path)
-            with open('commands.txt',mode='a+') as f:
-                f.write(f'octave --silent spiral.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} \n')
-                Np += 1
+            with open('/results/commands.txt',mode='a+') as f, open('/results/commands_ff.txt',mode='a+') as f2:
+                f.write(f'octave --silent spiral.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} {int(freq)}\n')
+                f2.write(f'octave --silent spiral_ff.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} {int(freq)}\n')
+                Np =Np+ 1
+                if Np == 1:
+                    f.write(f'octave --silent spiral.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} {int(freq)}\n')
+                    f2.write(f'octave --silent spiral_ff.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} {int(freq)}\n')
+                    Np=Np+1
 
     print('=============================================\n')
     return new_patterns
@@ -84,6 +88,7 @@ def fetch_element_patterns(spirads,freq,h):
         rad = rad*1000
         patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(np.around(freq/1e6,-1))}_height_{h}.csv'
         patt=np.genfromtxt(patt_path,delimiter=',')
+        print(f'{patt_path} \n \n Found \n')
         patt = patt / np.amax(patt)
         patterns.append(patt)
     return patterns
@@ -118,16 +123,15 @@ def cost_function(r,thetas,h,plots=False):
     freq = fmax * (1+np.sin(60*np.pi/180))
     try:
         np1=check_element_patterns(spirads,h,freq)
-        np2=check_element_patterns(spirads,h,fmin)
+        np2=check_element_patterns(spirads,h,fmin,Np=len(np1)+1)
         new_patts = np1 + np2
         invoke_openems()
     except ArrayElementException as e:
         print(e)
         cost = 100000
         return cost
-    check_completion(new_patts)
-    element_pattern_max = fetch_element_patterns(spirads,freq)
-    element_pattern_min = fetch_element_patterns(spirads,fmin)
+    element_pattern_max = fetch_element_patterns(spirads,freq,h)
+    element_pattern_min = fetch_element_patterns(spirads,fmin,h)
     lam_max = 3e8/freq
     lam_min = 3e8/fmin
     k_max = 2*np.pi/lam_max
@@ -147,11 +151,20 @@ def cost_function(r,thetas,h,plots=False):
     return cost
 
 def invoke_openems():
-    if os.path.exists('commands.txt'):
-        proc=subprocess.Popen("parallel -j15 < commands.txt",shell=True)
+    if os.path.exists('/results/commands.txt'):
+        # Run time stepping
+        proc=subprocess.Popen("parallel -j15 < /results/commands.txt",shell=True)
         while proc.poll() is None:
             pass
-        os.remove('commands.txt')
+        # Run far field calculation
+        print('====================================\n')
+        print('Starting Far Fields\n')
+        print('====================================\n')
+        proc=subprocess.Popen("parallel -j15 < /results/commands_ff.txt",shell=True)
+        while proc.poll() is None:
+            pass
+        os.remove('/results/commands.txt')
+        os.remove('/results/commands_ff.txt')
         return
     else:
         print('No new sims\n')
