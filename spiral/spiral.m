@@ -94,11 +94,12 @@ stop  = [mesh.x(end-9) mesh.y(end-9) mesh.z(end-9)];
 [CSX, nf2ff] = CreateNF2FFBox(CSX, 'nf2ff', start, stop, 'Directions', [1 1 1 1 0 1]);
 
 %% prepare simulation folder
-Sim_Path = sprintf('tmp_spiral%d_%d',nP,nF);
+Sim_Path = sprintf('tmp_spiral%d_%d',nP,nF)
 Sim_CSX = 'spiral_ant.xml';
 
 [status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory
 [status, message, messageid] = mkdir( Sim_Path ); % create empty simulation folder
+fileattrib([Sim_Path '/' Sim_CSX])
 
 %% write openEMS compatible xml-file
 WriteOpenEMS([Sim_Path '/' Sim_CSX], FDTD, CSX);

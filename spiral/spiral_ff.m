@@ -94,7 +94,7 @@ stop  = [mesh.x(end-9) mesh.y(end-9) mesh.z(end-9)];
 [CSX, nf2ff] = CreateNF2FFBox(CSX, 'nf2ff', start, stop, 'Directions', [1 1 1 1 0 1]);
 
 %% prepare simulation folder
-Sim_Path = sprintf('tmp_spiral%d_%d',nF,nP)
+Sim_Path = sprintf('tmp_spiral%d_%d',nP,nF)
 Sim_CSX = 'spiral_ant.xml';
 % calculate the far field at phi=0 degrees and at phi=90 degrees
 disp( 'calculating far field' );

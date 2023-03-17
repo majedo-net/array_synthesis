@@ -153,14 +153,14 @@ def cost_function(r,thetas,h,plots=False):
 def invoke_openems():
     if os.path.exists('/results/commands.txt'):
         # Run time stepping
-        proc=subprocess.Popen("parallel -j15 < /results/commands.txt",shell=True)
+        proc=subprocess.Popen("parallel -j5 < /results/commands.txt",shell=True)
         while proc.poll() is None:
             pass
         # Run far field calculation
         print('====================================\n')
         print('Starting Far Fields\n')
         print('====================================\n')
-        proc=subprocess.Popen("parallel -j15 < /results/commands_ff.txt",shell=True)
+        proc=subprocess.Popen("parallel -j5 < /results/commands_ff.txt",shell=True)
         while proc.poll() is None:
             pass
         os.remove('/results/commands.txt')

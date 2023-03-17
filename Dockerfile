@@ -4,6 +4,10 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
+WORKDIR /
+COPY setup.m /opt/openEMS/share/openEMS/matlab/setup.m
+COPY hdf5setup.m .
+RUN octave --silent hdf5setup.m 
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 COPY entry.py .
