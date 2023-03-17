@@ -143,9 +143,9 @@ def cost_function(r,thetas,h,plots=False):
     des_bw = 35
     sll = -5
     meas_bw = Beamwidth(theta,ArrF_max)
-    costmax = BeamCost(des_bw,meas_bw,sll,theta,phi,ArrF_max)
+    costmax = BeamCost(des_bw,meas_bw,theta,phi,ArrF_max)
     meas_bw = Beamwidth(theta,ArrF_min)
-    costmin = BeamCost(des_bw,meas_bw,sll,theta,phi,ArrF_min)
+    costmin = BeamCost(des_bw,meas_bw,theta,phi,ArrF_min)
     cost = costmin + costmax
     makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,save=True)
     return cost
