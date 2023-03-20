@@ -38,14 +38,15 @@ def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
             else:
                 peaks.remove(p)
     print(f'PSLL: {psll}')
-    cost = np.abs(des_bw - meas_bw) + psll
+    #cost = np.abs(des_bw - meas_bw) + psll
+    cost = psll
     
     return cost,peaks
 
 def Beamwidth(theta,Arrf):
     del_theta = (theta[1] - theta[0])*180/np.pi
     try:
-        peak = sp.peak_widths(Arrf[:,90],[90],rel_height=0.5)[0]
+        peak = sp.peak_widths(Arrf[:,90],[90],rel_height=1)[0]
     except RuntimeWarning:
         peak = 180
     return peak*del_theta
@@ -58,7 +59,8 @@ def makePatternPlots(theta,phi,AF,Tot,cost,freq,peaks=None,element=None,save=Fal
         ax2.plot(np.rad2deg(theta),Tot[:,ph],label=f'Phi={ph}')
         if peaks:
             ax2.plot(np.rad2deg(theta[peaks]),Tot[peaks,ph],'x')
-        ax3.plot(np.rad2deg(theta),element[:,ph],label=f'phi = {ph}')
+        if element:
+            ax3.plot(np.rad2deg(theta),element[:,ph],label=f'phi = {ph}')
     ax1.grid(True,which='both')
     ax2.grid(True,which='both')
     ax1.legend()
@@ -77,6 +79,7 @@ def makePatternPlots(theta,phi,AF,Tot,cost,freq,peaks=None,element=None,save=Fal
     ax1.legend()
     ax2.legend()
     ax1.set_title('Array Factor')
+    plt.close()
 
 
 if __name__ == '__main__':

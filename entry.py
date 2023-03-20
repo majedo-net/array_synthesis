@@ -105,20 +105,6 @@ def cost_function(r,thetas,h,plots=False):
     points = list(zip(xs.ravel(),ys.ravel()))
     spirads = KDTree(points).query(points,k=[2])[0].flatten()
     spirads = np.around(spirads/2,2)
-    if plots:
-        fig,ax = subplots()
-        ax.set_xlim(xmin=-np.max(d)*1.5,xmax=np.max(d)*1.5)
-        xmax = 1.1*np.max(xs)+np.max(spirads)
-        ymax = 1.1*np.max(ys)+np.max(spirads)
-        ax.axis([-xmax, xmax, -ymax, ymax])
-        dind = 1
-        for i in range(len(xs)):
-            circs[i] = Circle((xs[i],ys[i]),spirads[i],facecolor='blue',edgecolor='k')
-            ax.add_patch(circs[i])
-        ax.grid()
-        ax.set_aspect('equal','box')
-        fig.savefig('circles.png')
-        print(np.unique(spirads))
 
     freq = fmax * (1+np.sin(60*np.pi/180))
     try:
@@ -143,11 +129,26 @@ def cost_function(r,thetas,h,plots=False):
     des_bw = 35
     sll = -5
     meas_bw = Beamwidth(theta,ArrF_max)
-    costmax = BeamCost(des_bw,meas_bw,theta,phi,ArrF_max)
+    costmax,peaksmax = BeamCost(des_bw,meas_bw,theta,phi,ArrF_max)
     meas_bw = Beamwidth(theta,ArrF_min)
-    costmin = BeamCost(des_bw,meas_bw,theta,phi,ArrF_min)
+    costmin,peaksmin = BeamCost(des_bw,meas_bw,theta,phi,ArrF_min)
     cost = costmin + costmax
     makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,save=True)
+    if plots:
+        fig,ax = subplots()
+        ax.set_xlim(xmin=-np.max(d)*1.5,xmax=np.max(d)*1.5)
+        xmax = 1.1*np.max(xs)+np.max(spirads)
+        ymax = 1.1*np.max(ys)+np.max(spirads)
+        ax.axis([-xmax, xmax, -ymax, ymax])
+        dind = 1
+        for i in range(len(xs)):
+            circs[i] = Circle((xs[i],ys[i]),spirads[i],facecolor='blue',edgecolor='k')
+            ax.add_patch(circs[i])
+        ax.grid()
+        ax.set_aspect('equal','box')
+        fig.savefig(f'circles_cost_{cost}.png')
+        print(np.unique(spirads))
+        matplotlib.pyplot.close()
     return cost
 
 def invoke_openems():
@@ -171,9 +172,9 @@ def invoke_openems():
         return
 
 if __name__ == '__main__':
-    n_particles =5 
-    n_iterations = 10
+    n_particles =3 
+    n_iterations =3 
     swarm=init_swarm(n_particles)
     cost,pos = swarm.optimize(compute_costs,n_iterations)
     cost_function(pos[0],pos[1:-1],n_particles,plots=True)
-    #with open('results/optimized',mode='w') as f: f.write(f'cost: {cost} \n pos: {pos}')
+    with open('results/optimized',mode='w') as f: f.write(f'cost: {cost} \n pos: {pos}')
