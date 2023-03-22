@@ -1,4 +1,5 @@
 import pyswarms as ps
+import random
 import numpy as np
 from matplotlib.pyplot import *
 from matplotlib.patches import Circle
@@ -74,10 +75,6 @@ def check_element_patterns(spirads,h,freq,Np=0):
                 f.write(f'octave --silent spiral.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} {int(freq)}\n')
                 f2.write(f'octave --silent spiral_ff.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} {int(freq)}\n')
                 Np =Np+ 1
-                if Np == 1:
-                    f.write(f'octave --silent spiral.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} {int(freq)}\n')
-                    f2.write(f'octave --silent spiral_ff.m {int(freq)}e6 {r0} {alpha} {h} {rad} {Np} {int(freq)}\n')
-                    Np=Np+1
 
     print('=============================================\n')
     return new_patterns
@@ -87,8 +84,8 @@ def fetch_element_patterns(spirads,freq,h):
     for i,rad in enumerate(spirads):
         rad = rad*1000
         patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(np.around(freq/1e6,-1))}_height_{h}.csv'
-        patt=np.genfromtxt(patt_path,delimiter=',')
-        print(f'{patt_path} \n \n Found \n')
+        patt=np.genfromtxt(patt_path,delimiter=',',max_rows=181)
+        print(f'{patt_path}    ==== Found and parsed \n')
         patt = patt / np.amax(patt)
         patterns.append(patt)
     return patterns
@@ -129,26 +126,17 @@ def cost_function(r,thetas,h,plots=False):
     des_bw = 35
     sll = -5
     meas_bw = Beamwidth(theta,ArrF_max)
-    costmax,peaksmax = BeamCost(des_bw,meas_bw,theta,phi,ArrF_max)
+    costmax,peaksmax = BeamCost(des_bw,meas_bw,theta,phi,Tot_max)
     meas_bw = Beamwidth(theta,ArrF_min)
-    costmin,peaksmin = BeamCost(des_bw,meas_bw,theta,phi,ArrF_min)
+    costmin,peaksmin = BeamCost(des_bw,meas_bw,theta,phi,Tot_min)
     cost = costmin + costmax
-    makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,save=True)
-    if plots:
-        fig,ax = subplots()
-        ax.set_xlim(xmin=-np.max(d)*1.5,xmax=np.max(d)*1.5)
-        xmax = 1.1*np.max(xs)+np.max(spirads)
-        ymax = 1.1*np.max(ys)+np.max(spirads)
-        ax.axis([-xmax, xmax, -ymax, ymax])
-        dind = 1
-        for i in range(len(xs)):
-            circs[i] = Circle((xs[i],ys[i]),spirads[i],facecolor='blue',edgecolor='k')
-            ax.add_patch(circs[i])
-        ax.grid()
-        ax.set_aspect('equal','box')
-        fig.savefig(f'circles_cost_{cost}.png')
-        print(np.unique(spirads))
-        matplotlib.pyplot.close()
+
+    if not os.path.exists('/results/plots'):
+        os.mkdir('/results/plots')
+    idstring = '%08x' % random.randrange(16**8)
+    makeArrayPlot(xs,ys,d,spirads,idstring)
+    makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,idstring,save=True)
+    makePatternPlots(theta,phi,ArrF_min,Tot_min,cost,fmin,idstring,save=True)
     return cost
 
 def invoke_openems():
@@ -161,7 +149,7 @@ def invoke_openems():
         print('====================================\n')
         print('Starting Far Fields\n')
         print('====================================\n')
-        proc=subprocess.Popen("parallel -j5 < /results/commands_ff.txt",shell=True)
+        proc=subprocess.Popen("parallel -j15 < /results/commands_ff.txt",shell=True)
         while proc.poll() is None:
             pass
         os.remove('/results/commands.txt')

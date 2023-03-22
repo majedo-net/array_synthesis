@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from matplotlib.patches import Circle
 from scipy import signal as sp
 from circ_rps import *
 import warnings
@@ -27,19 +27,24 @@ def array_factor(xs, ys,k, f,theta,phi):
 def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
     des_bw = des_bw
     meas_bw = meas_bw
+    print(meas_bw)
     peaks=[]
-    psll = 0
+    psll = 0 # peak sidelobe level
+    asll = 0 # average sidelobe level
+    N = 1
     for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
-        peaks.extend(sp.find_peaks(Arrf[:,ph],prominence=20,width=5)[0].tolist())
-        for p in peaks:
-            if np.abs(np.rad2deg(theta[p])) > (meas_bw/2):
-                if Arrf[p,ph] > psll:
-                    psll = Arrf[p,ph]
-            else:
-                peaks.remove(p)
+        for th in theta:
+            if np.abs(np.rad2deg(th)) > meas_bw/2:
+                th = int(np.rad2deg(th))
+                asll += Arrf[th,ph]
+                N= N+1
+                if Arrf[th,ph] > psll:
+                    psll = Arrf[90,90]-Arrf[th,ph]
+    asll = asll/N
     print(f'PSLL: {psll}')
+    print(f'ASLL: {asll}')
     #cost = np.abs(des_bw - meas_bw) + psll
-    cost = psll
+    cost = psll + asll
     
     return cost,peaks
 
@@ -51,16 +56,30 @@ def Beamwidth(theta,Arrf):
         peak = 180
     return peak*del_theta
 
-def makePatternPlots(theta,phi,AF,Tot,cost,freq,peaks=None,element=None,save=False):
-    fig,[ax1,ax2,ax3] = plt.subplots(3,1)
+def makeArrayPlot(xs,ys,d,spirads,idstring):
+    fig,ax = plt.subplots()
+    xmax = 1.1*np.max(xs)+np.max(spirads)
+    ymax = 1.1*np.max(ys)+np.max(spirads)
+    ax.axis([-xmax, xmax, -ymax, ymax])
+    dind = 1
+    circs = []
+    for i in range(len(xs)):
+        circs.append(Circle((xs[i],ys[i]),spirads[i],facecolor='blue',edgecolor='k'))
+        ax.add_patch(circs[i])
+    ax.grid()
+    ax.set_aspect('equal','box')
+    fig.savefig(f'/results/plots/array_plot_{idstring}.png')
+    plt.close()
+    
+
+def makePatternPlots(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None,save=False):
+    fig,[ax1,ax2] = plt.subplots(2,1)
     for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
         ph = int(ph)
         ax1.plot(np.rad2deg(phi),Tot[ph,:],label=f'Theta={ph}')
         ax2.plot(np.rad2deg(theta),Tot[:,ph],label=f'Phi={ph}')
         if peaks:
             ax2.plot(np.rad2deg(theta[peaks]),Tot[peaks,ph],'x')
-        if element:
-            ax3.plot(np.rad2deg(theta),element[:,ph],label=f'phi = {ph}')
     ax1.grid(True,which='both')
     ax2.grid(True,which='both')
     ax1.legend()
@@ -68,19 +87,7 @@ def makePatternPlots(theta,phi,AF,Tot,cost,freq,peaks=None,element=None,save=Fal
     ax1.set_title('Total')
     fig.set_size_inches(10,8)
     if save:
-        fig.savefig(f'/results/freq_{freq/1e6}_cost_{int(cost)}.png')
-    fig,[ax1,ax2] = plt.subplots(2,1)
-    for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
-        ph = int(ph)
-        ax1.plot(np.rad2deg(phi),AF[ph,:],label=f'Theta={ph}')
-        ax2.plot(np.rad2deg(theta),AF[:,ph],label=f'Phi={ph}')
-    ax1.grid(True,which='both')
-    ax2.grid(True,which='both')
-    ax1.legend()
-    ax2.legend()
-    ax1.set_title('Array Factor')
-    plt.close()
-
+        fig.savefig(f'/results/plots/id_{idstring}_freq_{int(freq/1e6)}_cost_{int(cost)}.png')
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
