@@ -101,7 +101,7 @@ def cost_function(r,thetas,h,plots=False):
     circs = [None]*len(xs)
     points = list(zip(xs.ravel(),ys.ravel()))
     spirads = KDTree(points).query(points,k=[2])[0].flatten()
-    spirads = np.around((spirads/2)0.96,2)
+    spirads = np.around((spirads/2)*0.96,2)
 
     freq = fmax * (1+np.sin(60*np.pi/180))
     try:
