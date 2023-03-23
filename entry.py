@@ -136,7 +136,7 @@ def cost_function(r,thetas,h,plots=False):
     idstring = '%08x' % random.randrange(16**8)
     makeArrayPlot(xs,ys,d,spirads,idstring)
     with open(f'/results/{idstring}_array.txt',mode='w') as f: 
-        f.write(f'h: {h} \n\n xs: {xs} \n\n ys: {ys} \n\n spirads: {spirads}'
+        f.write(f'h: {h} \n\n xs: {xs} \n\n ys: {ys} \n\n spirads: {spirads}')
 
     makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,idstring,save=True)
     makePatternPlots(theta,phi,ArrF_min,Tot_min,cost,fmin,idstring,save=True)
