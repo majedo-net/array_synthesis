@@ -101,7 +101,7 @@ def cost_function(r,thetas,h,plots=False):
     circs = [None]*len(xs)
     points = list(zip(xs.ravel(),ys.ravel()))
     spirads = KDTree(points).query(points,k=[2])[0].flatten()
-    spirads = np.around(spirads/2,2)
+    spirads = np.around((spirads/2)0.96,2)
 
     freq = fmax * (1+np.sin(60*np.pi/180))
     try:
@@ -135,6 +135,9 @@ def cost_function(r,thetas,h,plots=False):
         os.mkdir('/results/plots')
     idstring = '%08x' % random.randrange(16**8)
     makeArrayPlot(xs,ys,d,spirads,idstring)
+    with open(f'/results/{idstring}_array.txt',mode='w') as f: 
+        f.write(f'h: {h} \n\n xs: {xs} \n\n ys: {ys} \n\n spirads: {spirads}'
+
     makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,idstring,save=True)
     makePatternPlots(theta,phi,ArrF_min,Tot_min,cost,fmin,idstring,save=True)
     return cost

@@ -15,9 +15,9 @@ def array_factor(xs, ys,k, f,theta,phi):
     Tot = np.zeros([len(theta),len(phi)],dtype=np.complex64)
     for i in range(len(xs)):
         r = np.sqrt(xs[i]**2 + ys[i]**2)
-        xvec = r*np.outer(np.sin(theta),np.cos(phi))
-        yvec = r*np.outer(np.sin(theta),np.sin(phi))
-        ArrF += np.exp(1j*k*(xvec + yvec))
+        u = r*np.outer(np.sin(theta),np.cos(phi))
+        v = r*np.outer(np.sin(theta),np.sin(phi))
+        ArrF += np.exp(1j*k*(u + v))
         if np.shape(ArrF) != np.shape(f[1]):
             print(f'Element pattern data (shape: {np.shape(f)}) is different shape from Theta x Phi (shape: {np.shape(ArrF)}')
         else:
@@ -33,13 +33,12 @@ def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
     asll = 0 # average sidelobe level
     N = 1
     for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
-        for th in theta:
+        for idx,th in enumerate(theta):
             if np.abs(np.rad2deg(th)) > meas_bw/2:
-                th = int(np.rad2deg(th))
-                asll += Arrf[th,ph]
+                asll += Arrf[idx,ph]
                 N= N+1
-                if Arrf[th,ph] > psll:
-                    psll = Arrf[90,90]-Arrf[th,ph]
+                if Arrf[idx,ph] > psll:
+                    psll = Arrf[idx,ph]-Arrf[90,90]
     asll = asll/N
     print(f'PSLL: {psll}')
     print(f'ASLL: {asll}')
@@ -51,7 +50,7 @@ def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
 def Beamwidth(theta,Arrf):
     del_theta = (theta[1] - theta[0])*180/np.pi
     try:
-        peak = sp.peak_widths(Arrf[:,90],[90],rel_height=1)[0]
+        peak = sp.peak_widths(Arrf[:,90],[90],rel_height=0.5)[0]
     except RuntimeWarning:
         peak = 180
     return peak*del_theta
