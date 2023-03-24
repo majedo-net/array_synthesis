@@ -37,7 +37,7 @@ def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
             if np.abs(np.rad2deg(th)) > meas_bw/2:
                 asll += Arrf[idx,ph]
                 N= N+1
-                if Arrf[idx,ph] > psll:
+                if (Arrf[idx,ph]-Arrf[90,90]) > psll:
                     psll = Arrf[idx,ph]-Arrf[90,90]
     asll = asll/N
     print(f'PSLL: {psll}')
@@ -86,7 +86,7 @@ def makePatternPlots(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None
     ax1.set_title('Total')
     fig.set_size_inches(10,8)
     if save:
-        fig.savefig(f'/results/plots/id_{idstring}_freq_{int(freq/1e6)}_cost_{int(cost)}.png')
+        fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

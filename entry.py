@@ -163,8 +163,8 @@ def invoke_openems():
         return
 
 if __name__ == '__main__':
-    n_particles =3 
-    n_iterations =3 
+    n_particles = 5
+    n_iterations = 20
     swarm=init_swarm(n_particles)
     cost,pos = swarm.optimize(compute_costs,n_iterations)
     cost_function(pos[0],pos[1:-1],n_particles,plots=True)
