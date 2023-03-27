@@ -93,7 +93,7 @@ def fetch_element_patterns(spirads,freq,h):
 def cost_function(r,thetas,h,plots=False):
     N = 3
     fmax = 2.3e9
-    fmin = 0.5e9
+    fmin = 400e6
     d = rps(fmax,r,N)
     h=int(h)
     xs, ys = circ_positions(d)
@@ -138,8 +138,8 @@ def cost_function(r,thetas,h,plots=False):
     with open(f'/results/{idstring}_array.txt',mode='w') as f: 
         f.write(f'h: {h} \n\n xs: {xs} \n\n ys: {ys} \n\n spirads: {spirads}')
 
-    makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,idstring,save=True)
-    makePatternPlots(theta,phi,ArrF_min,Tot_min,cost,fmin,idstring,save=True)
+    makePatternPlotsOnlyTheta(theta,phi,ArrF_max,Tot_max,cost,freq,idstring,save=True)
+    makePatternPlotsOnlyTheta(theta,phi,ArrF_min,Tot_min,cost,fmin,idstring,save=True)
     return cost
 
 def invoke_openems():

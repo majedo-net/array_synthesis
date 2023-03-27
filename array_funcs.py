@@ -70,6 +70,20 @@ def makeArrayPlot(xs,ys,d,spirads,idstring):
     fig.savefig(f'/results/plots/array_plot_{idstring}.png')
     plt.close()
     
+def makePatternPlotsOnlyTheta(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None,save=False):
+    fig,ax2 = plt.subplots(1,1)
+    for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
+        ph = int(ph)
+        ax2.plot(np.rad2deg(theta),Tot[:,ph],label=f'Phi={ph}')
+        if peaks:
+            ax2.plot(np.rad2deg(theta[peaks]),Tot[peaks,ph],'x')
+    ax2.grid(True,which='both')
+    ax2.legend()
+    ax2.set_title('Total')
+    fig.set_size_inches(10,8)
+    if save:
+        fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
+    plt.close()
 
 def makePatternPlots(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None,save=False):
     fig,[ax1,ax2] = plt.subplots(2,1)
@@ -87,6 +101,7 @@ def makePatternPlots(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None
     fig.set_size_inches(10,8)
     if save:
         fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
+    plt.close()
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
