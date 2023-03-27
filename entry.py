@@ -86,7 +86,7 @@ def fetch_element_patterns(spirads,freq,h):
         patt_path = f'/results/ff/farfieldspiral_rad_{int(np.around(rad,0))}_freq_{int(np.around(freq/1e6,-1))}_height_{h}.csv'
         patt=np.genfromtxt(patt_path,delimiter=',',max_rows=181)
         print(f'{patt_path}    ==== Found and parsed \n')
-        #patt = patt / np.amax(patt)
+        patt = patt / np.amax(patt)
         patterns.append(patt)
     return patterns
 

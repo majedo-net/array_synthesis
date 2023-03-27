@@ -80,7 +80,7 @@ def makePatternPlotsOnlyTheta(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,ele
             ax2.plot(np.rad2deg(theta[peaks]),Tot[peaks,ph],'x')
     ax2.grid(True,which='both')
     ax2.legend()
-    ax2.set_title('Total Pattern at F={int(freq/1e6)}MHz')
+    ax2.set_title(f'Total Pattern at F={int(freq/1e6)}MHz')
     fig.set_size_inches(10,8)
     if save:
         fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
