@@ -94,17 +94,15 @@ stop  = [mesh.x(end-9) mesh.y(end-9) mesh.z(end-9)];
 Sim_Path = sprintf('tmp_spiral%d',nP);
 Sim_CSX = 'spiral_ant.xml';
 
+
+% calculate the far field at phi=0 degrees and at phi=90 degrees
+disp( 'calculating far field' );
+thetas = linspace(-pi/2, pi/2, 181);
+phis = linspace(0,pi,91);
+nf2ff = CalcNF2FF(nf2ff, Sim_Path, freq, thetas, phis,'Verbose',1);
+G = cell2mat(nf2ff.E_norm);
+csvwrite(sprintf('farfieldspiral_rad_%d_freq_%d.csv', rmax,freq/1e6), G);
+[el,az] = meshgrid(thetas,phis);
+[X,Y,Z] = sph2cart(az,(el-pi/2),G');
+surf(X,Y,Z);
 [status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory
-[status, message, messageid] = mkdir( Sim_Path ); % create empty simulation folder
-
-%% write openEMS compatible xml-file
-WriteOpenEMS([Sim_Path '/' Sim_CSX], FDTD, CSX);
-
-%% show the structure
-CSXGeomPlot([Sim_Path '/' Sim_CSX]);
-
-%% run openEMS
-Settings.Silent = 0;
-RunOpenEMS(Sim_Path, Sim_CSX);
-
-
