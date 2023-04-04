@@ -36,12 +36,12 @@ if __name__ == '__main__':
  -2.57225270e-01] 
 
     spirads= [0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06,
- 0.06 0.09, 0.08, 0.07, 0.07, 0.08, 0.09, 0.08, 0.07, 0.07, 0.08, 0.1,  0.1,  0.09,
- 0.09 0.09, 0.09, 0.1,  0.1,  0.09, 0.09, 0.09, 0.09]
+ 0.06, 0.09, 0.08, 0.07, 0.07, 0.08, 0.09, 0.08, 0.07, 0.07, 0.08, 0.1,  0.1,  0.09,
+ 0.09, 0.09, 0.09, 0.1,  0.1,  0.09, 0.09, 0.09, 0.09]
 
 
     fmax = 2.3e9
-    fmin = 0.5e9
+    fmin = 0.4e9
     freq = fmax * (1+np.sin(60*np.pi/180))
     element_pattern_max = fetch_element_patterns(spirads,freq,h)
     element_pattern_min = fetch_element_patterns(spirads,fmin,h)
@@ -59,5 +59,5 @@ if __name__ == '__main__':
     ArrF_max, Tot_max = scan_array_factor(xs,ys,k_max,element_pattern_max,theta,phi,theta_0,phi_0)
     ArrF_min, Tot_min = scan_array_factor(xs,ys,k_min,element_pattern_min,theta,phi,theta_0,phi_0)
 
-    makePatternPlots(theta,phi,ArrF_max,Tot_max,cost,freq,'optimized',save=True)
-    makePatternPlots(theta,phi,ArrF_min,Tot_min,cost,fmin,'optimized',save=True)
+    makePatternPlotsOnlyTheta(theta,phi,ArrF_max,Tot_max,0,freq,'optimized',save=True)
+    makePatternPlotsOnlyTheta(theta,phi,ArrF_min,Tot_min,0,fmin,'optimized',save=True)
