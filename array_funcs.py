@@ -35,14 +35,15 @@ def scan_array_factor(xs, ys,k, f,theta,phi,theta_0,phi_0):
         r = np.sqrt(xs[i]**2 + ys[i]**2)
         path_len_delta = (xs[i]*np.sin(theta_0)*np.cos(phi_0)+ys[i]*np.sin(theta_0)*np.sin(phi_0))
         steering_vector = np.exp(-1j*k*path_len_delta)
-        u = r*np.outer(np.sin(theta),np.cos(phi))
-        v = r*np.outer(np.sin(theta),np.sin(phi))
-        ArrF += np.exp(1j*k*(u + v))*steering_vector
-        if np.shape(ArrF) != np.shape(f[1]):
+        u = xs[i]*np.outer(np.sin(theta),np.cos(phi))
+        v = ys[i]*np.outer(np.sin(theta),np.sin(phi))
+        te = np.exp(1j*k*(u+v))*steering_vector
+        ArrF += te
+        if np.shape(ArrF) != np.shape(f[i]):
             print(f'Element pattern data (shape: {np.shape(f)}) is different shape from Theta x Phi (shape: {np.shape(ArrF)}')
         else:
-            Tot = ArrF*f[i]
-    return np.abs(ArrF),np.abs(Tot)
+            Tot += te*f[i]
+    return np.abs(ArrF),np.real(Tot)
 
 def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
     des_bw = des_bw
@@ -112,7 +113,7 @@ def makePatternPlotsOnlyTheta(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,ele
     fig,ax2 = plt.subplots(1,1)
     for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
         ph = int(ph)
-        ax2.plot(np.rad2deg(theta),Tot[:,ph],label=f'Phi={ph}')
+        ax2.plot(np.rad2deg(theta),AF[:,ph],label=f'Phi={ph}')
         if peaks:
             ax2.plot(np.rad2deg(theta[peaks]),Tot[peaks,ph],'x')
     ax2.grid(True,which='both')

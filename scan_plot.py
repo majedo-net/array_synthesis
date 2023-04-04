@@ -54,10 +54,11 @@ if __name__ == '__main__':
 
     # make scanned plots
     theta_0 = np.deg2rad(60)
-    phi_0 = np.deg2rad(0)
+    phi_0 = np.deg2rad(135)
 
     ArrF_max, Tot_max = scan_array_factor(xs,ys,k_max,element_pattern_max,theta,phi,theta_0,phi_0)
     ArrF_min, Tot_min = scan_array_factor(xs,ys,k_min,element_pattern_min,theta,phi,theta_0,phi_0)
+    ArrF_max = (25/35)*ArrF_max
 
-    makePatternPlotsOnlyTheta(theta,phi,ArrF_max,Tot_max,0,freq,'optimized',save=True)
+    makePatternPlotsOnlyTheta(theta,phi,ArrF_max,Tot_max,0,fmax,'optimized',save=True)
     makePatternPlotsOnlyTheta(theta,phi,ArrF_min,Tot_min,0,fmin,'optimized',save=True)
