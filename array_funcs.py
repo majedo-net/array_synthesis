@@ -24,6 +24,24 @@ def array_factor(xs, ys,k, f,theta,phi):
             Tot = ArrF*f[i]
     return np.abs(ArrF),np.abs(Tot)
 
+def scan_array_factor(xs, ys,k, f,theta,phi,theta_0,phi_0):
+    if len(xs)!=len(ys):
+        print('X and Y position array lengths do not match')
+        raise ValueError
+        return
+    ArrF = np.zeros([len(theta),len(phi)],dtype=np.complex64)
+    Tot = np.zeros([len(theta),len(phi)],dtype=np.complex64)
+    for i in range(len(xs)):
+        r = np.sqrt(xs[i]**2 + ys[i]**2)
+        u = r*np.outer(np.sin(theta),np.cos(phi))*np.sin(theta_0)*np.cos(phi_0)
+        v = r*np.outer(np.sin(theta),np.sin(phi))*np.sin(theta_0)*np.sin(phi_0)
+        ArrF += np.exp(1j*k*(u + v))
+        if np.shape(ArrF) != np.shape(f[1]):
+            print(f'Element pattern data (shape: {np.shape(f)}) is different shape from Theta x Phi (shape: {np.shape(ArrF)}')
+        else:
+            Tot = ArrF*f[i]
+    return np.abs(ArrF),np.abs(Tot)
+
 def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
     des_bw = des_bw
     meas_bw = meas_bw
