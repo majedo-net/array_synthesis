@@ -40,7 +40,7 @@ def scan_array_factor(xs, ys,k, f,theta,phi,theta_0,phi_0):
         te = np.exp(1j*k*(u+v))*steering_vector
         ArrF += te
         if np.shape(ArrF) != np.shape(f[i]):
-            print(f'Element pattern data (shape: {np.shape(f)}) is different shape from Theta x Phi (shape: {np.shape(ArrF)}')
+            print(f'Element pattern data (shape: {np.shape(f[i])}) is different shape from Theta x Phi (shape: {np.shape(ArrF)}')
         else:
             Tot += te*f[i]
     return np.abs(ArrF),np.real(Tot)

@@ -1,6 +1,6 @@
 clear;
 %disp(size(args));
-freq = 4.2e9;
+freq = 0.4e9;
 r0 = 5; % minimum inner spiral radius
 alpha = 0.2; % exponential spiral coefficient
 h = 33; % height above gorund plane
@@ -98,7 +98,7 @@ Sim_CSX = 'spiral_ant.xml';
 % calculate the far field at phi=0 degrees and at phi=90 degrees
 disp( 'calculating far field' );
 thetas = linspace(-pi/2, pi/2, 181);
-phis = linspace(0,pi,91);
+phis = linspace(0,pi,181);
 nf2ff = CalcNF2FF(nf2ff, Sim_Path, freq, thetas, phis,'Verbose',1);
 G = cell2mat(nf2ff.E_norm);
 csvwrite(sprintf('farfieldspiral_rad_%d_freq_%d.csv', rmax,freq/1e6), G);

@@ -12,9 +12,9 @@ if __name__ == '__main__':
     spirads = 0.96*0.065/2 # outer radius of spiral
     xs,ys = circ_positions(d)
     spirads = np.ones_like(xs)*spirads
-    low_pattern = np.genfromtxt('spiral/farfieldspiral_rad_31_freq_400.csv')
+    low_pattern = np.genfromtxt('spiral/farfieldspiral_rad_31_freq_400.csv',delimiter=',')
     low_pattern = low_pattern/np.amax(low_pattern)
-    high_pattern = np.genfromtxt('spiral/farfieldspiral_rad_31_freq_4200.csv')
+    high_pattern = np.genfromtxt('spiral/farfieldspiral_rad_31_freq_4200.csv',delimiter=',')
     high_pattern = high_pattern/np.amax(high_pattern)
 
     low_patt_array = []
@@ -25,9 +25,9 @@ if __name__ == '__main__':
     theta = np.linspace(-np.pi/2, np.pi/2, 181)
     phi = np.linspace(0, np.pi, 181)
     lowk = 2*np.pi*400e6/3e8
-    highk = 2*np.pi*400e6/3e8
-    lowAF,lowTot = array_factor(xs,ys,lowk,low_patt_array,theta,phi)
-    highAF,highTot = array_factor(xs,ys,highk,high_patt_array,theta,phi)
+    highk = 2*np.pi*2300e6/3e8
+    lowAF,lowTot = scan_array_factor(xs,ys,lowk,low_patt_array,theta,phi,np.deg2rad(60),0)
+    highAF,highTot = scan_array_factor(xs,ys,highk,high_patt_array,theta,phi,np.deg2rad(60),0)
     bw = Beamwidth(theta,lowTot)
     lowcost,_=BeamCost(1,bw,theta,phi,lowTot)
     bw = Beamwidth(theta,highTot)
@@ -53,9 +53,9 @@ if __name__ == '__main__':
     fig1,ax1 = plt.subplots()
     for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
         ph = int(ph)
-        ax1.plot(np.rad2deg(theta),lowTot[:,ph],label=f'Phi={ph}')
+        ax1.plot(np.rad2deg(theta),np.abs(lowTot[:,ph]),label=f'Phi={ph}')
     ax1.grid(True,which='both')
-    ax1.legend()
+    ax1.legend(loc='upper right')
     ax1.set_title('Total')
     fig.set_size_inches(10,8)
 

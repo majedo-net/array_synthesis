@@ -1,10 +1,10 @@
 clear;
 %disp(size(args));
-freq = 4.2e9;
+freq = 0.4e9;
 r0 = 5; % minimum inner spiral radius
 alpha = 0.2; % exponential spiral coefficient
 h = 33; % height above gorund plane
-rmax = 31; % max radius
+rmax = 65; % max radius
 nP = 0; % simeoultaneous sim index
 r0
 rmax
