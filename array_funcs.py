@@ -15,14 +15,14 @@ def array_factor(xs, ys,k, f,theta,phi):
     ArrF = np.zeros([len(theta),len(phi)],dtype=np.complex64)
     Tot = np.zeros([len(theta),len(phi)],dtype=np.complex64)
     for i in range(len(xs)):
-        r = np.sqrt(xs[i]**2 + ys[i]**2)
-        u = r*np.outer(np.sin(theta),np.cos(phi))
-        v = r*np.outer(np.sin(theta),np.sin(phi))
-        ArrF += np.exp(1j*k*(u + v))
+        u = xs[i]*np.outer(np.sin(theta),np.cos(phi))
+        v = ys[i]*np.outer(np.sin(theta),np.sin(phi))
+        this_element = np.exp(1j*k*(u+v))
+        ArrF += this_element
         if np.shape(ArrF) != np.shape(f[1]):
             print(f'Element pattern data (shape: {np.shape(f)}) is different shape from Theta x Phi (shape: {np.shape(ArrF)}')
         else:
-            Tot = ArrF*f[i]
+            Tot += this_element*f[i]
     return np.abs(ArrF),np.abs(Tot)
 
 def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
