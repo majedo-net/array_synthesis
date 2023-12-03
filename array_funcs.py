@@ -104,6 +104,18 @@ def makePatternPlots(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None
         fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
     plt.close()
 
+def makePolarPatternPlots(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None,save=False):
+    fig,ax = plt.subplots(subplot_kw=dict(projection='polar'))
+    ax.set_title('Total')
+    fig.set_size_inches(10,8)
+    r = np.sin(theta)
+    r,pol_theta = np.meshgrid(r,phi)
+    ax.contourf(pol_theta,r,Tot)
+    plt.show()
+    if save:
+        fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
+    plt.close()
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     d= rps(3e9,1.5,3)
