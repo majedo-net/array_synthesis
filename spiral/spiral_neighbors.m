@@ -1,14 +1,14 @@
 close all; clear;
 
 centers =[0, 0;
-    100 100;
+    200 100;
     100 -100;
     -100 -100;
     -100 100];
-rs = [5,90;
-    5,90;
-    5,50;
-    5,90];
+rs = [5,50;
+    5,40;
+    5,20;
+    5,30];
 
 %% setup the simulation
 physical_constants;
@@ -21,7 +21,10 @@ padding = max_res *20;
 hs = 1.6; % substrate thickness
 h = 30; % cavity height
 
+phase_center = [mean(centers(:,1),1) mean(centers(:,2),1) h];
+
 Np = 1; % simulation index
+ff_file = 'test_ff.csv'; % far fields file
 
 % size of the simulation box
 SimBox = [padding+max(rs)*2+max(centers) padding+max(rs)*2+max(centers) padding+h+hs];
@@ -81,4 +84,19 @@ WriteOpenEMS([Sim_Path '/' Sim_CSX], FDTD, CSX);
 %% show the structure
 CSXGeomPlot([Sim_Path '/' Sim_CSX]);
 
-rmdir( Sim_Path, 's' ); % clear previous directory
+%% run openEMS
+Settings.Silent = 0;
+RunOpenEMS(Sim_Path, Sim_CSX);
+
+disp( 'calculating far field' );
+thetas = linspace(-pi/2, pi/2, 181);
+phis = linspace(0,pi/2,181);
+nf2ff = CalcNF2FF(nf2ff, Sim_Path, freq,thetas, phis, ...
+    'Verbose',0,'Center',phase_center);
+Eth = nf2ff.E_theta;
+Eph = nf2ff.E_phi;
+Prad = nf2ff.Prad;
+
+writematrix(Prad,strcat('Prad_',ff_file));
+writematrix(Eth,strcat('Eth_',ff_file));
+writematrix(Eph,strcat('Eph_',ff_file));
