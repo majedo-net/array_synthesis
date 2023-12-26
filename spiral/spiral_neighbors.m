@@ -80,3 +80,5 @@ WriteOpenEMS([Sim_Path '/' Sim_CSX], FDTD, CSX);
 
 %% show the structure
 CSXGeomPlot([Sim_Path '/' Sim_CSX]);
+
+rmdir( Sim_Path, 's' ); % clear previous directory
