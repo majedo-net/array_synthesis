@@ -21,6 +21,8 @@ padding = max_res *20;
 hs = 1.6; % substrate thickness
 h = 30; % cavity height
 
+Np = 1; % simulation index
+
 % size of the simulation box
 SimBox = [padding+max(rs)*2+max(centers) padding+max(rs)*2+max(centers) padding+h+hs];
 
@@ -67,7 +69,7 @@ stop  = [mesh.x(end-9) mesh.y(end-9) mesh.z(end-9)];
 [CSX, nf2ff] = CreateNF2FFBox(CSX, 'nf2ff', start, stop, 'Directions', [1 1 1 1 0 1]);
 
 %% prepare simulation folder
-Sim_Path = sprintf('tmp_spiral%d',nP);
+Sim_Path = sprintf('tmp_spiral%d', Np);
 Sim_CSX = 'spiral_ant.xml';
 
 [status, message, messageid] = rmdir( Sim_Path, 's' ); % clear previous directory

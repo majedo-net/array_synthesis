@@ -49,4 +49,4 @@ CSX = AddBox(CSX, sprintf('substrate%d',Nidx), ...
 
 start=[center(1)-1 center(2)-1 h-hs];
 stop =[center(1)+1 center(2)+1 h+hs];
-[CSX] = AddLumpedPort(CSX,5,1,50,start,stop,[0 0 1],excite);
+[CSX] = AddLumpedPort(CSX,5,Nidx,50,start,stop,[0 0 1],excite);
