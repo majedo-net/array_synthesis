@@ -1,14 +1,60 @@
 import os, tempfile
-from pylab import *
 import numpy as np
 
 from CSXCAD  import ContinuousStructure
 from openEMS import openEMS
 from openEMS.physical_constants import *
 
-def makeSpiral():
+def makeSpiral(FDTD,CSX,mesh,center,radii,alpha,h,hs,Nidx,excite):
 
-    return
+    # Calculate top spiral
+    r0 = radii[0]
+    rmax = radii[1]
+    N = np.log(rmax/r0)/(2*np.pi*alpha)
+    a0 = np.pi/4
+    a1 = np.linspace(a0,N*2*np.pi,100*N)
+    a2 = a1 + np.pi/2
+    a3 = a2 + np.pi/2
+    a4 = a3 + np.pi/2
+    r = r0 * np.exp(alpha*a1)
+    tp = np.zeros([2, 2*r.size+52])
+    bp = tp
+    tp[0,:] = [0,r,r[-1]*np.ones([1, 50]),np.flip(r),0]
+    tp[1,:] = [0,a1,np.linspace(a1[-1],a2[-1],50),np.flip(a2),0]
+    bp[0,:] = [0,r,r[-1]*np.ones([1, 50]),np.flip(r),0]
+    bp[1,:] = [0,a3,np.linspace(a3[-1],a4[-1],50),np.flip(a4),0]
+
+    #create fixed lines for the simulation box and port
+    mesh.AddLine('x', [center[0]-r0, center[0]-1, center[0]+1, center[0]+r0])
+    mesh.AddLine('y', [center[1]-r0, center[1]-1, center[1]+1, center[1]+r0])
+    tp_cart = bp_cart = np.zeros_like(tp)
+    tp_cart[0,:] = tp[0,:] * np.cos(tp[1,:])
+    tp_cart[1,:] = tp[0,:] * np.sin(tp[1,:])
+    bp_cart[0,:] = bp[0,:] * np.cos(bp[1,:])
+    bp_cart[1,:] = bp[0,:] * np.sin(bp[1,:])
+    # move coordinates to spiral center
+    tp_cart[0,:] = center[0] + tp_cart[0,:]
+    tp_cart[1,:] = center[1] + tp_cart[1,:]
+    bp_cart[0,:] = center[0] + bp_cart[0,:]
+    bp_cart[1,:] = center[1] + bp_cart[1,:]
+    top = CSX.AddMetal(f'top_spiral{Nidx}')
+    top.AddLinPoly(priority=10,norm_dir='z',elevation=h+hs,points=tp_cart,length=0)
+    bot = CSX.AddMetal(f'bot_spiral{Nidx}')
+    bot.AddLinPoly(priority=10,norm_dir='z',elevation=h-hs,points=bp_cart,length=0)
+
+    substrate=CSX.AddMaterial(f'substrate{Nidx}')
+    substrate.SetMaterialProperty(epsilon=4.2)
+    start = [center[0]-rmax, center[1]-rmax, h-hs]
+    stop =  [center[0]+rmax, center[1]+rmax, h+hs]
+    substrate.AddBox(start=start, stop=stop, priority=0);
+
+
+    # apply the excitation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    start=[center[0]-1, center[1]-1, h-hs]
+    stop =[center[0]+1, center[1]+1, h+hs]
+    port= FDTD.AddLumpedPort(priority=5,CSX=CSX,port_nr=Nidx,R=50,start=start,stop=stop,p_dir='z',excite=excite)
+    return [CSX, FDTD, mesh, port]
     
 
 if __name__ == '__main__':
@@ -24,3 +70,42 @@ if __name__ == '__main__':
     hs = 1.6 # substrate thickness
     h = 30 # cavity height
     phase_center = np.ndarray([np.mean(centers,axis=0), h])
+
+    Sim_dir = os.path.join(tempfile.gettempdir(),'spiral_test')
+
+    Np = 1 # simulation index
+    ff_file = 'test_ff.csv'# far fields file
+
+    # size of the simulation box
+    SimBox = np.array([padding+np.max(rs)*2+np.max(centers), padding+np.max(rs)*2+np.max(centers), padding+h+hs])
+
+
+    ## setup FDTD parameter & excitation function
+    FDTD = openEMS(EndCriteria=1e-4,NrTS=50000)
+    FDTD.SetGaussExcite(0.5*(f_start+f_stop),0.5*(f_stop-f_start))
+    FDTD.SetBoundaryCond(['PML_8', 'PML_8', 'PML_8', 'PML_8', 'PEC', 'PML_8']) # boundary conditions
+
+    CSX = ContinuousStructure()
+    FDTD.SetCSX(CSX)
+    mesh = CSX.GetGrid()
+    mesh.SetDeltaUnit(unit)
+    
+    # create fixed lines for the simulation box and port
+    mesh.AddLine('x', [-SimBox(1)/2, SimBox(1)/2])
+    mesh.AddLine('y', [-SimBox(2)/2, SimBox(2)/2])
+    mesh.AddLine('z', [0, h-hs, h+hs, SimBox(3)])
+
+    # generate the spirals
+    for idx in range(size(radii,0)):
+        this_r = radii[idx,:]
+        this_center = centers[idx,:]
+        if idx==1:
+            excite=True
+        else:
+            excite=False
+        [CSX,FDTD,mesh,port] = makeSpiral(FDTD,CSX,mesh,this_center,this_r,0.32,h,hs,idx,excite)
+
+    mesh.SmoothMeshLines('all',max_res,1.4)
+    nf2ff = FDTD.CreateNF2FFBox()
+    CSX_File = '/results/spiral.xml'
+    CSX.Write2XML(CSX_File)
