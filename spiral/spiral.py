@@ -12,17 +12,18 @@ def makeSpiral(FDTD,CSX,mesh,center,radii,alpha,h,hs,Nidx,excite):
     rmax = radii[1]
     N = np.log(rmax/r0)/(2*np.pi*alpha)
     a0 = np.pi/4
-    a1 = np.linspace(a0,N*2*np.pi,100*N)
+    a1 = np.linspace(a0,N*2*np.pi,np.round(100*N).astype(int))
     a2 = a1 + np.pi/2
     a3 = a2 + np.pi/2
     a4 = a3 + np.pi/2
     r = r0 * np.exp(alpha*a1)
     tp = np.zeros([2, 2*r.size+52])
     bp = tp
-    tp[0,:] = [0,r,r[-1]*np.ones([1, 50]),np.flip(r),0]
-    tp[1,:] = [0,a1,np.linspace(a1[-1],a2[-1],50),np.flip(a2),0]
-    bp[0,:] = [0,r,r[-1]*np.ones([1, 50]),np.flip(r),0]
-    bp[1,:] = [0,a3,np.linspace(a3[-1],a4[-1],50),np.flip(a4),0]
+
+    tp[0,:] = np.hstack((0,r,r[-1]*np.ones(50),np.flip(r),0))
+    tp[1,:] = np.hstack((0,a1,np.linspace(a1[-1],a2[-1],50),np.flip(a2),0))
+    bp[0,:] = np.hstack((0,r,r[-1]*np.ones(50),np.flip(r),0))
+    bp[1,:] = np.hstack((0,a3,np.linspace(a3[-1],a4[-1],50),np.flip(a4),0))
 
     #create fixed lines for the simulation box and port
     mesh.AddLine('x', [center[0]-r0, center[0]-1, center[0]+1, center[0]+r0])
@@ -53,13 +54,13 @@ def makeSpiral(FDTD,CSX,mesh,center,radii,alpha,h,hs,Nidx,excite):
 
     start=[center[0]-1, center[1]-1, h-hs]
     stop =[center[0]+1, center[1]+1, h+hs]
-    port= FDTD.AddLumpedPort(priority=5,CSX=CSX,port_nr=Nidx,R=50,start=start,stop=stop,p_dir='z',excite=excite)
+    port= FDTD.AddLumpedPort(priority=5,port_nr=Nidx,R=50,start=start,stop=stop,p_dir='z',excite=excite)
     return [CSX, FDTD, mesh, port]
     
 
 if __name__ == '__main__':
-    centers = np.ndarray([[0, 0], [200, 100],[100, -100],[-100, -100],[-100, 100]])
-    radii = np.ndarray([[5,50],[5,40],[5,30],[5,20]])
+    centers = np.array([[0, 0], [200, 100],[100, -100],[-100, -100],[-100, 100]])
+    radii = np.array([[5,50],[5,40],[5,30],[5,20]])
 
     freq = 2e9
     unit = 1e-3 # all length in mm
@@ -69,15 +70,15 @@ if __name__ == '__main__':
     padding = max_res *20
     hs = 1.6 # substrate thickness
     h = 30 # cavity height
-    phase_center = np.ndarray([np.mean(centers,axis=0), h])
-
+    phase_center = np.array([np.mean(centers[:,0],axis=0), np.mean(centers[:,1],axis=0), h])
+    
     Sim_dir = os.path.join(tempfile.gettempdir(),'spiral_test')
 
     Np = 1 # simulation index
     ff_file = 'test_ff.csv'# far fields file
 
     # size of the simulation box
-    SimBox = np.array([padding+np.max(rs)*2+np.max(centers), padding+np.max(rs)*2+np.max(centers), padding+h+hs])
+    SimBox = np.array([padding+np.max(radii)*2+np.max(centers), padding+np.max(radii)*2+np.max(centers), padding+h+hs])
 
 
     ## setup FDTD parameter & excitation function
@@ -91,12 +92,12 @@ if __name__ == '__main__':
     mesh.SetDeltaUnit(unit)
     
     # create fixed lines for the simulation box and port
-    mesh.AddLine('x', [-SimBox(1)/2, SimBox(1)/2])
-    mesh.AddLine('y', [-SimBox(2)/2, SimBox(2)/2])
-    mesh.AddLine('z', [0, h-hs, h+hs, SimBox(3)])
+    mesh.AddLine('x', [-SimBox[0]/2, SimBox[0]/2])
+    mesh.AddLine('y', [-SimBox[1]/2, SimBox[1]/2])
+    mesh.AddLine('z', [0, h-hs, h+hs, SimBox[2]])
 
     # generate the spirals
-    for idx in range(size(radii,0)):
+    for idx in range(radii.shape[0]):
         this_r = radii[idx,:]
         this_center = centers[idx,:]
         if idx==1:
