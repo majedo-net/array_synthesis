@@ -6,4 +6,5 @@ RUN apt-get install -y --fix-missing build-essential python3-pip cmake git libhd
 RUN pip3 install matplotlib cython h5py setuptools numpy scipy
 RUN git clone --recursive https://github.com/thliebig/openEMS-Project.git
 WORKDIR "/openEMS-Project"
-RUN bash -c './update_openEMS.sh /opt/openEMS'
+RUN bash -c './update_openEMS.sh /opt/openEMS --python --with-hyp2mat'
+RUN bash -c 'export PATH="/opt/openEMS:$PATH"'
