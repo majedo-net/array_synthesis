@@ -58,26 +58,15 @@ def makeSpiral(FDTD,CSX,mesh,center,radii,alpha,h,hs,Nidx,excite):
     port= FDTD.AddLumpedPort(priority=5,port_nr=Nidx,R=150,start=start,stop=stop,p_dir='z',excite=excite)
     return [CSX, FDTD, mesh, port]
     
-
-if __name__ == '__main__':
-    centers = np.array([[0, 0], [200, 100],[100, -100],[-100, -100],[-100, 100]])
-    radii = np.array([[5,50],[5,40],[5,30],[5,20],[5,35]])
-
-    freq = 4e9
+def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi):
     unit = 1e-3 # all length in mm
     f_start = 0.8 * freq
     f_stop = 1.2 *freq
     max_res = np.floor(C0 / (f_stop) / unit / 20) #cell size: lambda/20
     padding = max_res *20
-    hs = 0.2 # substrate thickness
-    h = 10 # cavity height
     phase_center = np.array([np.mean(centers[:,0],axis=0), np.mean(centers[:,1],axis=0), h])
     
     Sim_dir = os.path.join(tempfile.gettempdir(),'spiral_test')
-
-    Np = 1 # simulation index
-    ff_file = 'test_ff.csv'# far fields file
-
     # size of the simulation box
     SimBox = np.array([padding+np.max(radii)*2+np.abs(np.max(centers)), padding+np.max(radii)*2+np.abs(np.max(centers)), padding+h+hs])
 
@@ -111,11 +100,26 @@ if __name__ == '__main__':
 
     mesh.SmoothMeshLines('all',max_res,1.4)
     nf2ff = FDTD.CreateNF2FFBox()
-    CSX_File = '/results/spiral.xml'
-    CSX.Write2XML(CSX_File)
     FDTD.Run(Sim_dir, cleanup=True)
-    sfreqs = np.linspace(f_start,f_stop,51)
+    ffres = nf2ff.CalcNF2FF(Sim_dir,freq,theta,phi,center=phase_center)
+    sfreqs = np.linspace(f_start,f_stop,101)
     ports[0].CalcPort(Sim_dir,sfreqs)
     s11 = ports[0].uf_ref / ports[0].uf_inc
     s11_db = 20.0*np.log10(np.abs(s11))
-    np.savetxt('/results/s11.txt',(sfreqs,s11_db))
+    E_norm = 20.0*np.log10(ffres.E_norm[0]/np.max(ffres.E_norm[0])) + ffres.Dmax[0]
+
+    return E_norm,s11_db,sfreqs
+
+
+if __name__ == '__main__':
+    centers = np.array([[0, 0], [200, 100],[100, -100],[-100, -100],[-100, 100]])
+    radii = np.array([[5,50],[5,40],[5,30],[5,20],[5,35]])
+    freq = 4e9
+    hs = 0.2 # substrate thickness
+    h = 10 # cavity height
+    theta = np.linspace(0, np.pi, 181)
+    phi = np.linspace(0, 2*np.pi, 361)
+
+    En,s11db,sfreqs = SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi)
+
+    print(En.shape)
