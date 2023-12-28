@@ -65,9 +65,9 @@ if __name__ == '__main__':
 
     freq = 4e9
     unit = 1e-3 # all length in mm
-    f_start = 0.2 * freq
-    f_stop = freq
-    max_res = np.floor(C0 / (f_stop) / unit / 20) #cell size: lambda/30
+    f_start = 0.8 * freq
+    f_stop = 1.2 *freq
+    max_res = np.floor(C0 / (f_stop) / unit / 20) #cell size: lambda/20
     padding = max_res *20
     hs = 0.2 # substrate thickness
     h = 10 # cavity height

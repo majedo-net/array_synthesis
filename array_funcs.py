@@ -7,22 +7,29 @@ import warnings
 warnings.filterwarnings("error")
 plt.rc('font',family='serif')
 
-def array_factor(xs, ys,k, f,theta,phi):
+def array_factor(xs, ys,k, f,theta,phi,t0=0,p0=0):
     if len(xs)!=len(ys):
         print('X and Y position array lengths do not match')
         raise ValueError
         return
+    t0 = np.deg2rad(t0)
+    p0 = np.deg2rad(p0)
     ArrF = np.zeros([len(theta),len(phi)],dtype=np.complex64)
     Tot = np.zeros([len(theta),len(phi)],dtype=np.complex64)
     for i in range(len(xs)):
+        pld = (xs[i]*np.sin(t0)*np.cos(p0) + ys[i]*np.sin(t0)*np.sin(p0))
+        steering_vector = np.exp(-1j*k*pld)
         u = xs[i]*np.outer(np.sin(theta),np.cos(phi))
         v = ys[i]*np.outer(np.sin(theta),np.sin(phi))
-        this_element = np.exp(1j*k*(u+v))
+        this_element = np.exp(1j*k*(u+v))*steering_vector
         ArrF += this_element
         if np.shape(ArrF) != np.shape(f[1]):
             print(f'Element pattern data (shape: {np.shape(f)}) is different shape from Theta x Phi (shape: {np.shape(ArrF)}')
         else:
             Tot += this_element*f[i]
+
+    ArrF = ArrF * np.conj(ArrF)
+    Tot = Tot * np.conj(Tot)
     return np.abs(ArrF),np.abs(Tot)
 
 def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
@@ -48,10 +55,23 @@ def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
     
     return cost,peaks
 
+def makeUVPlot(theta,phi,G):
+    u = np.outer(np.sin(theta),np.cos(phi))
+    v = np.outer(np.sin(theta),np.sin(phi))
+    G[u**2+v**2>1] = np.nan 
+
+    fig,ax = plt.subplots(layout='constrained')
+    CS = ax.pcolormesh(u,v,G,shading='gouraud',cmap='plasma')
+    ax.set_xlabel('u',weight='bold',fontsize=14)
+    ax.set_ylabel('v',weight='bold',fontsize=14)
+    fig.colorbar(CS,label='Gain (dBi)')
+    fig.savefig('myimage.pdf', dpi=600)
+    return
+
 def Beamwidth(theta,Arrf):
     del_theta = (theta[1] - theta[0])*180/np.pi
     try:
-        peak = sp.peak_widths(Arrf[:,90],[90],rel_height=0.5)[0]
+        peak = sp.peak_widths(Arrf[:,90],[90],rel_height=0.1)[0]
     except RuntimeWarning:
         peak = 180
     return peak*del_theta
@@ -71,82 +91,27 @@ def makeArrayPlot(xs,ys,d,spirads,idstring):
     fig.savefig(f'/results/plots/array_plot_{idstring}.png')
     plt.close()
     
-def makePatternPlotsOnlyTheta(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None,save=False):
-    fig,ax2 = plt.subplots(1,1)
-    for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
-        ph = int(ph)
-        ax2.plot(np.rad2deg(theta),Tot[:,ph],label=f'Phi={ph}')
-        if peaks:
-            ax2.plot(np.rad2deg(theta[peaks]),Tot[peaks,ph],'x')
-    ax2.grid(True,which='both')
-    ax2.legend()
-    ax2.set_title(f'Total Pattern at F={int(freq/1e6)}MHz')
-    fig.set_size_inches(10,8)
-    if save:
-        fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
-    plt.close()
-
-def makePatternPlots(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None,save=False):
-    fig,[ax1,ax2] = plt.subplots(2,1)
-    for ph in [0,15,30,45,60,75,90,105,120,135,150,165,180]:
-        ph = int(ph)
-        ax1.plot(np.rad2deg(phi),Tot[ph,:],label=f'Theta={ph}')
-        ax2.plot(np.rad2deg(theta),Tot[:,ph],label=f'Phi={ph}')
-        if peaks:
-            ax2.plot(np.rad2deg(theta[peaks]),Tot[peaks,ph],'x')
-    ax1.grid(True,which='both')
-    ax2.grid(True,which='both')
-    ax1.legend()
-    ax2.legend()
-    ax1.set_title('Total')
-    fig.set_size_inches(10,8)
-    if save:
-        fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
-    plt.close()
-
-def makePolarPatternPlots(theta,phi,AF,Tot,cost,freq,idstring,peaks=None,element=None,save=False):
-    fig,ax = plt.subplots(subplot_kw=dict(projection='polar'))
-    ax.set_title('Total')
-    fig.set_size_inches(10,8)
-    r = np.sin(theta)
-    r,pol_theta = np.meshgrid(r,phi)
-    ax.contourf(pol_theta,r,Tot)
-    plt.show()
-    if save:
-        fig.savefig(f'/results/plots/cost_{int(cost)}_id_{idstring}_freq_{int(freq/1e6)}.png')
-    plt.close()
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    d= rps(3e9,1.5,3)
+    d= rps(3e9,1,3)
     xs, ys = circ_positions(d)
     xs = np.insert(xs,0,0)
     ys = np.insert(ys,0,0)
     rs = np.array([5,-10,3,20])
-    xs,ys = rotate(xs,ys,rs,d)
-    f = np.ones(len(xs),dtype=object)
+    #xs,ys = rotate(xs,ys,rs,d)
     spirad = 70 
-    freq = 1870e6
+    freq = 4e9
     lamb = 3e8/freq
-    for i in np.arange(len(f)):
-        pat = np.genfromtxt(f'./results/ff/farfieldspiral_rad_{spirad}_freq_{int(freq/1e6)}.csv',delimiter=',')
-        pat = pat / np.amax(pat)
-        f[i] = pat
     k = 2*np.pi/lamb
-    theta = np.linspace(-np.pi/2, np.pi/2, 181)
-    phi = np.linspace(0, np.pi, 181)
-    ArrF,Tot = array_factor(xs,ys,k,f,theta,phi)
-
-    PHI, TH= np.meshgrid(phi,theta)
-    des_bw = 40 # desired beamwidth +/- degrees
-    meas_bw = Beamwidth(theta,ArrF)
+    theta = np.linspace(0, np.pi, 181)
+    phi = np.linspace(0, 2*np.pi, 361)
+    f = np.ones((xs.size,181,361))
+    ArrF,Tot = array_factor(xs,ys,k,f,theta,phi,t0=30,p0=45)
+    G = 10*np.log10(ArrF)
+    makeUVPlot(theta,phi,ArrF)
     
-    cost,peaks=BeamCost(des_bw,meas_bw,theta,phi,Tot)
-    fig,ax = plt.subplots()
-    ax.plot(xs,ys,'o')
-    ax.grid(True,'both')
-    
-    print(f'freq: {freq} \t measBW: {meas_bw} \t cost: {cost}')
-    makePatternPlots(theta,phi,ArrF,Tot,peaks,pat)    
-
     plt.show()
+
+    print('debug')
+
