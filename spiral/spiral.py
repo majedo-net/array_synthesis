@@ -18,7 +18,7 @@ def makeSpiral(FDTD,CSX,mesh,center,radii,alpha,h,hs,Nidx,excite):
     a4 = a3 + np.pi/2
     r = r0 * np.exp(alpha*a1)
     tp = np.zeros([2, 2*r.size+52])
-    bp = tp
+    bp = np.zeros([2, 2*r.size+52])
 
     tp[0,:] = np.hstack((0,r,r[-1]*np.ones(50),np.flip(r),0))
     tp[1,:] = np.hstack((0,a1,np.linspace(a1[-1],a2[-1],50),np.flip(a2),0))
@@ -28,7 +28,8 @@ def makeSpiral(FDTD,CSX,mesh,center,radii,alpha,h,hs,Nidx,excite):
     #create fixed lines for the simulation box and port
     mesh.AddLine('x', [center[0]-r0, center[0]-1, center[0]+1, center[0]+r0])
     mesh.AddLine('y', [center[1]-r0, center[1]-1, center[1]+1, center[1]+r0])
-    tp_cart = bp_cart = np.zeros_like(tp)
+    bp_cart = np.zeros_like(tp)
+    tp_cart = np.zeros_like(tp)
     tp_cart[0,:] = tp[0,:] * np.cos(tp[1,:])
     tp_cart[1,:] = tp[0,:] * np.sin(tp[1,:])
     bp_cart[0,:] = bp[0,:] * np.cos(bp[1,:])
@@ -54,22 +55,22 @@ def makeSpiral(FDTD,CSX,mesh,center,radii,alpha,h,hs,Nidx,excite):
 
     start=[center[0]-1, center[1]-1, h-hs]
     stop =[center[0]+1, center[1]+1, h+hs]
-    port= FDTD.AddLumpedPort(priority=5,port_nr=Nidx,R=50,start=start,stop=stop,p_dir='z',excite=excite)
+    port= FDTD.AddLumpedPort(priority=5,port_nr=Nidx,R=150,start=start,stop=stop,p_dir='z',excite=excite)
     return [CSX, FDTD, mesh, port]
     
 
 if __name__ == '__main__':
     centers = np.array([[0, 0], [200, 100],[100, -100],[-100, -100],[-100, 100]])
-    radii = np.array([[5,50],[5,40],[5,30],[5,20]])
+    radii = np.array([[5,50],[5,40],[5,30],[5,20],[5,35]])
 
-    freq = 2e9
+    freq = 4e9
     unit = 1e-3 # all length in mm
-    f_start = 0.9 * freq
+    f_start = 0.2 * freq
     f_stop = freq
     max_res = np.floor(C0 / (f_stop) / unit / 20) #cell size: lambda/30
     padding = max_res *20
-    hs = 1.6 # substrate thickness
-    h = 30 # cavity height
+    hs = 0.2 # substrate thickness
+    h = 10 # cavity height
     phase_center = np.array([np.mean(centers[:,0],axis=0), np.mean(centers[:,1],axis=0), h])
     
     Sim_dir = os.path.join(tempfile.gettempdir(),'spiral_test')
@@ -78,7 +79,7 @@ if __name__ == '__main__':
     ff_file = 'test_ff.csv'# far fields file
 
     # size of the simulation box
-    SimBox = np.array([padding+np.max(radii)*2+np.max(centers), padding+np.max(radii)*2+np.max(centers), padding+h+hs])
+    SimBox = np.array([padding+np.max(radii)*2+np.abs(np.max(centers)), padding+np.max(radii)*2+np.abs(np.max(centers)), padding+h+hs])
 
 
     ## setup FDTD parameter & excitation function
@@ -90,6 +91,7 @@ if __name__ == '__main__':
     FDTD.SetCSX(CSX)
     mesh = CSX.GetGrid()
     mesh.SetDeltaUnit(unit)
+    ports = []
     
     # create fixed lines for the simulation box and port
     mesh.AddLine('x', [-SimBox[0]/2, SimBox[0]/2])
@@ -100,13 +102,20 @@ if __name__ == '__main__':
     for idx in range(radii.shape[0]):
         this_r = radii[idx,:]
         this_center = centers[idx,:]
-        if idx==1:
+        if idx==0:
             excite=True
         else:
             excite=False
         [CSX,FDTD,mesh,port] = makeSpiral(FDTD,CSX,mesh,this_center,this_r,0.32,h,hs,idx,excite)
+        ports.append(port)
 
     mesh.SmoothMeshLines('all',max_res,1.4)
     nf2ff = FDTD.CreateNF2FFBox()
     CSX_File = '/results/spiral.xml'
     CSX.Write2XML(CSX_File)
+    FDTD.Run(Sim_dir, cleanup=True)
+    sfreqs = np.linspace(f_start,f_stop,51)
+    ports[0].CalcPort(Sim_dir,sfreqs)
+    s11 = ports[0].uf_ref / ports[0].uf_inc
+    s11_db = 20.0*np.log10(np.abs(s11))
+    np.savetxt('/results/s11.txt',(sfreqs,s11_db))

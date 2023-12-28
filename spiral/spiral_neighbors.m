@@ -98,5 +98,5 @@ Eph = nf2ff.E_phi;
 Prad = nf2ff.Prad;
 
 writematrix(Prad,strcat('Prad_',ff_file));
-writematrix(Eth,strcat('Eth_',ff_file));
-writematrix(Eph,strcat('Eph_',ff_file));
+writematrix(Eth{1},strcat('Eth_',ff_file));
+writematrix(Eph{1},strcat('Eph_',ff_file));
