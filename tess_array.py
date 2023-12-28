@@ -8,7 +8,7 @@ import warnings,os,tempfile
 warnings.filterwarnings("error")
 plt.rc('font',family='serif')
 
-import spiral.spiral as eqsp
+import eqspiral as eqsp
 from array_funcs import *
 
 def getNearestNeighbors(xs,ys,idx,neighbors):
@@ -39,6 +39,9 @@ if __name__ == '__main__':
     # -----------------------------#
     # Get embedded Element Patterns
     # -----------------------------#
+    print('=============================================')
+    print('Starting Embedded Element Pattern Simulation')
+    print('=============================================')
     for eid in range(xs.size):
         txs,tys = getNearestNeighbors(xs,ys,eid,8)
         centers = np.vstack((txs,tys)).T
@@ -46,6 +49,8 @@ if __name__ == '__main__':
         radii = np.ones((txs.size,2))
         radii[:,0] = 0.5
         radii[:,1] = spirad
+        print(f'radii: {radii}')
+        print(f'centers: {centers}')
         En,s11,sfreq = eqsp.SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi)
         np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11))
         fs[eid] = En
