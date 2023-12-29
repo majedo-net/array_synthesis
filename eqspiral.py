@@ -68,7 +68,7 @@ def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=0):
     
     Sim_dir = os.path.join(tempfile.gettempdir(),'spiral_test')
     # size of the simulation box
-    SimBox = np.array([padding+np.max(radii)*2+np.abs(np.max(centers)), padding+np.max(radii)*2+np.abs(np.max(centers)), padding+h+hs])
+    SimBox = np.array([padding+np.max(radii)*2+np.max(np.abs(centers[:,0])), padding+np.max(radii)*2+np.max(np.abs(centers[:,1])), padding+h+hs])
 
 
     ## setup FDTD parameter & excitation function

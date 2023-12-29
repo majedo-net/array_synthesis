@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
     # broadside pattern
     ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=0,p0=0)
-    G = 10*np.log10(ArrF)
+    G = 10*np.log10(Tot)
     title = f'With Coupling, f={freq/1e9}GHz, Broadside Scan'
     filename = f'/results/c_f{freq/1e9}ghz_ph0th0.pdf'
     makeUVPlot(theta,phi,G,title,filename)
