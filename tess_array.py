@@ -43,7 +43,7 @@ if __name__ == '__main__':
     print('Starting Embedded Element Pattern Simulation')
     print('=============================================')
     for eid in range(xs.size):
-        txs,tys = getNearestNeighbors(xs,ys,eid,8)
+        txs,tys = getNearestNeighbors(xs,ys,eid,6)
         centers = np.vstack((txs,tys)).T*1000
         centers = centers - centers[0,:]
         radii = np.ones((txs.size,2))
@@ -51,21 +51,20 @@ if __name__ == '__main__':
         radii[:,1] = spirad
         print(f'radii: {radii}')
         print(f'centers: {centers}')
-        En,s11,sfreq = eqsp.SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi)
+        En,s11,sfreq = eqsp.SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=eid)
         np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11))
         fs[eid] = En
 
     # broadside pattern
-    ArrF,Tot = array_factor(xs,ys,k,f,theta,phi,t0=0,p0=0)
+    ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=0,p0=0)
     G = 10*np.log10(ArrF)
-    title = f'No Coupling, f={freq/1e9}GHz, Broadside Scan'
-    filename = f'/results/nc_f{freq/1e9}ghz_ph0th0.pdf'
+    title = f'With Coupling, f={freq/1e9}GHz, Broadside Scan'
+    filename = f'/results/c_f{freq/1e9}ghz_ph0th0.pdf'
     makeUVPlot(theta,phi,G,title,filename)
-    plt.show()
     
     # scanned pattern
-    ArrF,Tot = array_factor(xs,ys,k,f,theta,phi,t0=60,p0=30)
+    ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=60,p0=30)
     G = 10*np.log10(ArrF)
-    title = f'No Coupling, f={freq/1e9}GHz, Scanned to 60 degrees'
-    filename = f'/results/nc_f{freq/1e9}ghz_ph30th60.pdf'
+    title = f'With Coupling, f={freq/1e9}GHz, Scanned to 60 degrees'
+    filename = f'/results/c_f{freq/1e9}ghz_ph30th60.pdf'
     makeUVPlot(theta,phi,G,title,filename)

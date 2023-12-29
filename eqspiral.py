@@ -58,7 +58,7 @@ def makeSpiral(FDTD,CSX,mesh,center,radii,alpha,h,hs,Nidx,excite):
     port= FDTD.AddLumpedPort(priority=5,port_nr=Nidx,R=150,start=start,stop=stop,p_dir='z',excite=excite)
     return [CSX, FDTD, mesh, port]
     
-def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi):
+def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=0):
     unit = 1e-3 # all length in mm
     f_start = 0.8 * freq
     f_stop = 1.2 *freq
@@ -100,7 +100,7 @@ def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi):
 
     mesh.SmoothMeshLines('all',max_res,1.4)
     nf2ff = FDTD.CreateNF2FFBox()
-    CSX.Write2XML('/results/csx.xml')
+    CSX.Write2XML(f'/results/csx{eid}.xml')
     FDTD.Run(Sim_dir, cleanup=True)
     ffres = nf2ff.CalcNF2FF(Sim_dir,freq,theta,phi,center=phase_center)
     sfreqs = np.linspace(f_start,f_stop,101)
@@ -109,7 +109,7 @@ def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi):
     s11_db = 20.0*np.log10(np.abs(s11))
     E_norm = 20.0*np.log10(ffres.E_norm[0]/np.max(ffres.E_norm[0])) + ffres.Dmax[0]
 
-    return E_norm,s11_db,sfreqs,CSX
+    return E_norm,s11_db,sfreqs
 
 
 if __name__ == '__main__':
