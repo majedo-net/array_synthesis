@@ -44,7 +44,7 @@ if __name__ == '__main__':
     print('=============================================')
     for eid in range(xs.size):
         txs,tys = getNearestNeighbors(xs,ys,eid,8)
-        centers = np.vstack((txs,tys)).T
+        centers = np.vstack((txs,tys)).T*1000
         centers = centers - centers[0,:]
         radii = np.ones((txs.size,2))
         radii[:,0] = 0.5
