@@ -51,9 +51,9 @@ if __name__ == '__main__':
         radii[:,1] = spirad
         print(f'radii: {radii}')
         print(f'centers: {centers}')
-        En,s11,sfreq = eqsp.SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=eid)
-        np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11))
-        fs[eid] = En
+        En,s11f,s11_db,sfreq = eqsp.SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=eid)
+        np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11_db))
+        fs[eid] = En*(1-s11f)
 
     # broadside pattern
     ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=0,p0=0)

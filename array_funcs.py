@@ -31,7 +31,7 @@ def array_factor(xs, ys,k, f,theta,phi,t0=0,p0=0):
     ArrF = np.real(ArrF)
     ArrF = ArrF*(np.max(ArrF)/np.mean(ArrF))
     Tot = np.real(Tot)
-    Tot = np.real(Tot)
+    Tot = Tot*(np.max(Tot)/np.mean(Tot))
     return np.abs(ArrF),np.abs(Tot)
 
 def BeamCost(des_bw,meas_bw,theta,phi,Arrf):

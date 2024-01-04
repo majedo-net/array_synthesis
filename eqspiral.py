@@ -102,13 +102,15 @@ def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=0):
     CSX.Write2XML(f'/results/csx{eid}.xml')
     FDTD.Run(Sim_dir, cleanup=True)
     ffres = nf2ff.CalcNF2FF(Sim_dir,freq,theta,phi,center=centers[0,:])
-    sfreqs = np.linspace(1e9,20e9,501)
+    sfreqs = np.linspace(f_start,f_stop,101)
     ports[0].CalcPort(Sim_dir,sfreqs)
     s11 = ports[0].uf_ref / ports[0].uf_inc
-    s11_db = 20.0*np.log10(np.abs(s11))
+    s11 = np.abs(s11)
+    s11_db = 20.0*np.log10(s11)
+    s11f = s11[50]
     E_norm = ffres.E_norm[0]/np.max(ffres.E_norm[0]) 
 
-    return E_norm,s11_db,sfreqs
+    return E_norm,s11f,s11_db,sfreqs
 
 
 if __name__ == '__main__':
