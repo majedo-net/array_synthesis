@@ -28,8 +28,10 @@ def array_factor(xs, ys,k, f,theta,phi,t0=0,p0=0):
         else:
             Tot += this_element*f[i]
 
-    ArrF = ArrF * np.conj(ArrF)
-    Tot = Tot * np.conj(Tot)
+    ArrF = np.real(ArrF)
+    ArrF = ArrF*(np.max(ArrF)/np.mean(ArrF))
+    Tot = np.real(Tot)
+    Tot = np.real(Tot)
     return np.abs(ArrF),np.abs(Tot)
 
 def BeamCost(des_bw,meas_bw,theta,phi,Arrf):
@@ -102,7 +104,7 @@ if __name__ == '__main__':
     #xs,ys = rotate(xs,ys,rs,d)
     spirad = 10
     spirads = np.ones(xs.size)*spirad/1000
-    freq = 35e9
+    freq = 6e9
     lamb = 3e8/freq
     k = 2*np.pi/lamb
     theta = np.linspace(0, np.pi, 181)
