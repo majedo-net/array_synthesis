@@ -30,7 +30,7 @@ if __name__ == '__main__':
     spirads = np.ones(xs.size)*spirad
     hs = 0.1
     h = 5
-    freq = 5e9
+    freq = 3e9
     lamb = 3e8/freq
     k = 2*np.pi/lamb
     theta = np.linspace(0, np.pi, 181)
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     
     # scanned pattern
     ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=60,p0=30)
-    G = 10*np.log10(ArrF)
+    G = 10*np.log10(Tot)
     title = f'With Coupling, f={freq/1e9}GHz, Scanned to 60 degrees'
     filename = f'/results/c_f{freq/1e9}ghz_ph30th60.pdf'
     makeUVPlot(theta,phi,G,title,filename)

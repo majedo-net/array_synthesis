@@ -64,11 +64,10 @@ def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=0):
     f_stop = 1.2 *freq
     max_res = np.floor(C0 / (f_stop) / unit / 20) #cell size: lambda/20
     padding = max_res *20
-    phase_center = np.array([np.mean(centers[:,0],axis=0), np.mean(centers[:,1],axis=0), h])
     
     Sim_dir = os.path.join(tempfile.gettempdir(),'spiral_test')
     # size of the simulation box
-    SimBox = np.array([padding+np.max(radii)*2+np.max(np.abs(centers[:,0])), padding+np.max(radii)*2+np.max(np.abs(centers[:,1])), padding+h+hs])
+    SimBox = np.array([padding+np.max(radii)*4+np.max(np.abs(centers[:,0])), padding+np.max(radii)*4+np.max(np.abs(centers[:,1])), padding+h+hs])
 
 
     ## setup FDTD parameter & excitation function
@@ -102,12 +101,12 @@ def SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=0):
     nf2ff = FDTD.CreateNF2FFBox()
     CSX.Write2XML(f'/results/csx{eid}.xml')
     FDTD.Run(Sim_dir, cleanup=True)
-    ffres = nf2ff.CalcNF2FF(Sim_dir,freq,theta,phi,center=phase_center)
-    sfreqs = np.linspace(f_start,f_stop,101)
+    ffres = nf2ff.CalcNF2FF(Sim_dir,freq,theta,phi,center=centers[0,:])
+    sfreqs = np.linspace(1e9,20e9,501)
     ports[0].CalcPort(Sim_dir,sfreqs)
     s11 = ports[0].uf_ref / ports[0].uf_inc
     s11_db = 20.0*np.log10(np.abs(s11))
-    E_norm = 20.0*np.log10(ffres.E_norm[0]/np.max(ffres.E_norm[0])) + ffres.Dmax[0]
+    E_norm = ffres.E_norm[0]/np.max(ffres.E_norm[0]) 
 
     return E_norm,s11_db,sfreqs
 
