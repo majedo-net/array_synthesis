@@ -9,6 +9,7 @@ warnings.filterwarnings("error")
 plt.rc('font',family='serif')
 
 import eqspiral as eqsp
+import patch as psim
 from array_funcs import *
 
 def getNearestNeighbors(xs,ys,idx,neighbors):
@@ -28,43 +29,46 @@ if __name__ == '__main__':
     #xs,ys = rotate(xs,ys,rs,d)
     spirad = 10
     spirads = np.ones(xs.size)*spirad
-    hs = 0.1
-    h = 5
-    freq = 3e9
-    lamb = 3e8/freq
-    k = 2*np.pi/lamb
-    theta = np.linspace(0, np.pi, 181)
-    phi = np.linspace(0, 2*np.pi, 361)
-    fs = np.zeros([xs.size, theta.size, phi.size])
-    # -----------------------------#
-    # Get embedded Element Patterns
-    # -----------------------------#
-    print('=============================================')
-    print('Starting Embedded Element Pattern Simulation')
-    print('=============================================')
-    for eid in range(xs.size):
-        txs,tys = getNearestNeighbors(xs,ys,eid,6)
-        centers = np.vstack((txs,tys)).T*1000
-        centers = centers - centers[0,:]
-        radii = np.ones((txs.size,2))
-        radii[:,0] = 0.5
-        radii[:,1] = spirad
-        print(f'radii: {radii}')
-        print(f'centers: {centers}')
-        En,s11f,s11_db,sfreq = eqsp.SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi,eid=eid)
-        np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11_db))
-        fs[eid] = En*(1-s11f)
+    L = 12.2
+    W = 15.5
+    hs = 0.2
+    freqs = [6e9]
+    for fdx in range(len(freqs)):
+        freq = freqs[fdx]
+        lamb = 3e8/freq
+        k = 2*np.pi/lamb
+        theta = np.linspace(0, np.pi, 181)
+        phi = np.linspace(0, 2*np.pi, 361)
+        fs = np.zeros([xs.size, theta.size, phi.size])
+        # -----------------------------#
+        # Get embedded Element Patterns
+        # -----------------------------#
+        print('=============================================')
+        print('Starting Embedded Element Pattern Simulation')
+        print('=============================================')
+        for eid in range(xs.size):
+            txs,tys = getNearestNeighbors(xs,ys,eid,6)
+            centers = np.vstack((txs,tys)).T*1000
+            centers = centers - centers[0,:]
+            radii = np.ones((txs.size,2))
+            radii[:,0] = 0.5
+            radii[:,1] = spirad
+            print(f'radii: {radii}')
+            print(f'centers: {centers}')
+            En,s11f,s11_db,sfreq = psim.SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=eid)
+            np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11_db))
+            fs[eid] = En*(1-s11f)
 
-    # broadside pattern
-    ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=0,p0=0)
-    G = 10*np.log10(Tot)
-    title = f'With Coupling, f={freq/1e9}GHz, Broadside Scan'
-    filename = f'/results/c_f{freq/1e9}ghz_ph0th0.pdf'
-    makeUVPlot(theta,phi,G,title,filename)
+        # broadside pattern
+        ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=0,p0=0)
+        G = 10*np.log10(Tot)
+        title = f'With Coupling, f={freq/1e9}GHz, Broadside Scan'
+        filename = f'/results/patch_c_f{freq/1e9}ghz_ph0th0.pdf'
+        makeUVPlot(theta,phi,G,title,filename)
     
-    # scanned pattern
-    ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=60,p0=30)
-    G = 10*np.log10(Tot)
-    title = f'With Coupling, f={freq/1e9}GHz, Scanned to 60 degrees'
-    filename = f'/results/c_f{freq/1e9}ghz_ph30th60.pdf'
-    makeUVPlot(theta,phi,G,title,filename)
+        # scanned pattern
+        ArrF,Tot = array_factor(xs,ys,k,fs,theta,phi,t0=60,p0=30)
+        G = 10*np.log10(Tot)
+        title = f'With Coupling, f={freq/1e9}GHz, Scanned to 60 degrees'
+        filename = f'/results/patch_c_f{freq/1e9}ghz_ph30th60.pdf'
+        makeUVPlot(theta,phi,G,title,filename)
