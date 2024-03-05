@@ -11,6 +11,8 @@ def makePatch(FDTD,CSX,mesh,center,L,W,hs,max_res,Nidx,excite):
     start = [center[0]-W/2, center[1]-L/2, hs]
     stop = [center[0]+W/2, center[1]+L/2, hs]
     patch.AddBox(priority=10, start=start,stop=stop)
+    mesh.AddLine('x',[start[0],stop[0]])
+    mesh.AddLine('y',[start[1],stop[1]])
     FDTD.AddEdges2Grid(dirs='xy',properties=patch,metal_edge_res=max_res)
 
     substrate=CSX.AddMaterial(f'substrate{Nidx}')
@@ -29,9 +31,12 @@ def makePatch(FDTD,CSX,mesh,center,L,W,hs,max_res,Nidx,excite):
 
     # apply the excitation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    start=[center[0]-1,center[1]-0.25*L,0]
-    stop =[center[0]+1,center[1]-0.25*L,hs]
+    start=[center[0]-0.2,center[1]-0.22*L,0]
+    stop =[center[0]+0.2,center[1]-0.18*L,hs]
     port= FDTD.AddLumpedPort(priority=5,port_nr=Nidx,R=50,start=start,stop=stop,p_dir='z',excite=excite)
+
+    mesh.AddLine('x',[start[0],stop[0]])
+    mesh.AddLine('y',[start[1],stop[1]])
     return [CSX, FDTD, mesh, port]
     
 def SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=0):
@@ -41,13 +46,13 @@ def SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=0):
     max_res = np.floor(C0 / (f_stop) / unit / 20) #cell size: lambda/20
     padding = max_res *20
     
-    Sim_dir = os.path.join(tempfile.gettempdir(),'spiral_test')
+    Sim_dir = os.path.join(tempfile.gettempdir(),f'patch_sim{eid}')
     # size of the simulation box
-    SimBox = np.array([padding+L*2+np.max(np.abs(centers[:,0])), padding+L+np.max(np.abs(centers[:,1])), padding+hs])
+    SimBox = np.array([padding+W*2+np.max(np.abs(centers[:,0])), padding+L*2+np.max(np.abs(centers[:,1])), padding+hs])
 
 
     ## setup FDTD parameter & excitation function
-    FDTD = openEMS(EndCriteria=1e-4,NrTS=50000)
+    FDTD = openEMS(EndCriteria=1e-4,NrTS=500000)
     FDTD.SetGaussExcite(0.5*(f_start+f_stop),0.5*(f_stop-f_start))
     FDTD.SetBoundaryCond(['PML_8', 'PML_8', 'PML_8', 'PML_8', 'PEC', 'PML_8']) # boundary conditions
 
@@ -62,7 +67,7 @@ def SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=0):
     mesh.AddLine('y', [-SimBox[1]/2, SimBox[1]/2])
     mesh.AddLine('z', [0, hs, SimBox[2]])
 
-    # generate the spirals
+    # generate the patches
     for idx in range(centers.shape[0]):
         this_center = centers[idx,:]
         if idx==0:
@@ -76,27 +81,32 @@ def SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=0):
     nf2ff = FDTD.CreateNF2FFBox()
     CSX.Write2XML(f'/results/csx{eid}.xml')
     FDTD.Run(Sim_dir, cleanup=True)
-    ffres = nf2ff.CalcNF2FF(Sim_dir,freq,theta,phi,center=centers[0,:])
-    sfreqs = np.linspace(f_start,f_stop,101)
+    ffres = nf2ff.CalcNF2FF(Sim_dir,freq,theta,phi)
+    sfreqs = np.linspace(f_start,f_stop,301)
     ports[0].CalcPort(Sim_dir,sfreqs)
     s11 = ports[0].uf_ref / ports[0].uf_inc
+    zin = ports[0].uf_tot / ports[0].if_tot
     s11 = np.abs(s11)
     s11_db = 20.0*np.log10(s11)
     s11f = s11[50]
     E_norm = ffres.E_norm[0]/np.max(ffres.E_norm[0]) 
 
-    return E_norm,s11f,s11_db,sfreqs
+    return E_norm,s11f,s11_db,sfreqs, zin
 
 
 if __name__ == '__main__':
-    centers = np.array([[0, 0], [200, 100],[100, -100],[-100, -100],[-100, 100]])
-    radii = np.array([[5,50],[5,40],[5,30],[5,20],[5,35]])
-    freq = 4e9
-    hs = 0.2 # substrate thickness
-    h = 10 # cavity height
+    centers = np.array([[0, 0]])
+    L = 10.2
+    W = 15.5
+    hs = 1.5
+    freqs = [6e9]
+    hs = 1.5 # substrate thickness
     theta = np.linspace(0, np.pi, 181)
     phi = np.linspace(0, 2*np.pi, 361)
 
-    En,s11db,sfreqs = SimulateEmbeddedFarfield(freq,hs,h,centers,radii,theta,phi)
+    En,s11f,s11db,sfreqs,zin = SimulateEmbeddedFarfield(freqs[0],hs,centers,L,W,theta,phi)
 
-    print(En.shape)
+    print(zin.shape)
+
+    np.savetxt('/results/s11_single_patch.txt',(sfreqs,s11db,np.real(zin),np.imag(zin)))
+    np.savetxt('/results/ff_single_patch.txt',En)

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import multiprocessing as mp
 from matplotlib.patches import Circle
 from scipy import signal as sp
 from scipy.spatial import KDTree
@@ -20,7 +21,66 @@ def getNearestNeighbors(xs,ys,idx,neighbors):
     tys = ys[idxes]
     return txs,tys
 
+def getElementParams(xs,ys,eid,freq,hs,L,W,theta,phi):
+    # prepare element parameters for a multi processing worker
+    txs,tys = getNearestNeighbors(xs,ys,eid,6)
+    centers = np.vstack((txs,tys)).T*1000
+    centers = centers - centers[0,:]
+    return [freq,hs,centers,L,W,theta,phi,eid]
 
+def parallelEmbeddedWorker(element):
+    freq,hs,centers,L,W,theta,phi,eid = element
+
+    En,s11f,s11_db,sfreq,zin = psim.SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=eid)
+    np.savetxt(f'/results/ff_{eid}.txt',En)
+    np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11_db,np.real(zin),np.imag(zin)))
+
+    return
+
+
+'''
+Multi threaded version
+=======================
+'''
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    d= rps(6e9,1,3)
+    xs, ys = circ_positions(d)
+    rs = np.array([5,-10,3,20])
+    #xs,ys = rotate(xs,ys,rs,d)
+    L = 10.2
+    W = 15.5
+    hs =1.5 
+    freqs = [6e9]
+    for fdx in range(len(freqs)):
+        freq = freqs[fdx]
+        lamb = 3e8/freq
+        k = 2*np.pi/lamb
+        theta = np.linspace(0, np.pi, 181)
+        phi = np.linspace(0, 2*np.pi, 361)
+        fs = np.zeros([xs.size, theta.size, phi.size])
+        # -----------------------------#
+        # Get embedded Element Patterns
+        # -----------------------------#
+        print('=============================================')
+        print('Starting Embedded Element Pattern Simulation')
+        print('=============================================')
+        elements = []
+        for eid in range(xs.size):
+            elements.append(getElementParams(xs,ys,eid,freq,hs,L,W,theta,phi))
+        
+
+        cpus = mp.cpu_count()
+        workers = int(cpus/4)
+        pool = mp.Pool(workers)
+        pool.map(parallelEmbeddedWorker,elements,chunksize=1)
+        pool.close()
+        pool.join()
+
+
+'''
+Single threaded version
+=======================
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     d= rps(6e9,1,3)
@@ -29,9 +89,9 @@ if __name__ == '__main__':
     #xs,ys = rotate(xs,ys,rs,d)
     spirad = 10
     spirads = np.ones(xs.size)*spirad
-    L = 12.2
+    L = 10.2
     W = 15.5
-    hs = 0.2
+    hs =1.5 
     freqs = [6e9]
     for fdx in range(len(freqs)):
         freq = freqs[fdx]
@@ -55,8 +115,9 @@ if __name__ == '__main__':
             radii[:,1] = spirad
             print(f'radii: {radii}')
             print(f'centers: {centers}')
-            En,s11f,s11_db,sfreq = psim.SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=eid)
-            np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11_db))
+            En,s11f,s11_db,sfreq,zin = psim.SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=eid)
+            np.savetxt(f'/results/ff_{eid}.txt',En)
+            np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11_db,np.real(zin),np.imag(zin)))
             fs[eid] = En*(1-s11f)
 
         # broadside pattern
@@ -72,3 +133,5 @@ if __name__ == '__main__':
         title = f'With Coupling, f={freq/1e9}GHz, Scanned to 60 degrees'
         filename = f'/results/patch_c_f{freq/1e9}ghz_ph30th60.pdf'
         makeUVPlot(theta,phi,G,title,filename)
+
+        '''
