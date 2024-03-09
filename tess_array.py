@@ -1,12 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import multiprocessing as mp
-from matplotlib.patches import Circle
-from scipy import signal as sp
 from scipy.spatial import KDTree
 from circ_rps import *
-import warnings,os,tempfile
-warnings.filterwarnings("error")
+import warnings,datetime
+#warnings.filterwarnings("error")
 plt.rc('font',family='serif')
 
 import eqspiral as eqsp
@@ -19,21 +17,25 @@ def getNearestNeighbors(xs,ys,idx,neighbors):
     ds,idxes = tree.query([xs[idx],ys[idx]],k=(neighbors+1))
     txs = xs[idxes]
     tys = ys[idxes]
-    return txs,tys
+    return txs,tys,idxes
 
 def getElementParams(xs,ys,eid,freq,hs,L,W,theta,phi):
     # prepare element parameters for a multi processing worker
-    txs,tys = getNearestNeighbors(xs,ys,eid,6)
+    txs,tys,neighbor_indexes = getNearestNeighbors(xs,ys,eid,6)
     centers = np.vstack((txs,tys)).T*1000
     centers = centers - centers[0,:]
-    return [freq,hs,centers,L,W,theta,phi,eid]
+    return [freq,hs,centers,neighbor_indexes,L,W,theta,phi,eid]
 
 def parallelEmbeddedWorker(element):
-    freq,hs,centers,L,W,theta,phi,eid = element
+    freq,hs,centers,neighbor_indexes,L,W,theta,phi,eid = element
 
-    En,s11f,s11_db,sfreq,zin = psim.SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=eid)
+    En,s11f,s11_db,sfreq,zin,sn1 = psim.SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=eid)
+    print(len(neighbor_indexes))
+    print(type(neighbor_indexes))
+    neighbor_indexes = np.asarray(neighbor_indexes,dtype=np.int32)
     np.savetxt(f'/results/ff_{eid}.txt',En)
     np.savetxt(f'/results/s11_{eid}.txt',(sfreq,s11_db,np.real(zin),np.imag(zin)))
+    np.savetxt(f'/results/sn{eid}.txt',(neighbor_indexes,sn1[:,151]))
 
     return
 
@@ -44,6 +46,8 @@ Multi threaded version
 '''
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
+    with open('/results/times.txt',mode='a') as f:
+        f.write(f'start: {datetime.datetime.now()}\n')
     d= rps(6e9,1,3)
     xs, ys = circ_positions(d)
     rs = np.array([5,-10,3,20])
@@ -77,6 +81,8 @@ if __name__ == '__main__':
         pool.close()
         pool.join()
 
+    with open('/results/times.txt',mode='a') as f:
+        f.write(f'end: {datetime.datetime.now()}')
 
 '''
 Single threaded version
