@@ -70,7 +70,11 @@ def SimulateFullArray(freq,hs,centers,L,W,theta,phi):
     # generate the patches
     for idx in range(centers.shape[0]):
         this_center = centers[idx,:]
-        [CSX,FDTD,mesh,port] = makePatch(FDTD,CSX,mesh,this_center,L,W,hs,max_res,idx,True)
+        if idx==0:
+            excite = 1.0
+        else:
+            excite = 1.0
+        [CSX,FDTD,mesh,port] = makePatch(FDTD,CSX,mesh,this_center,L,W,hs,max_res,idx,excite)
         ports.append(port)
 
     mesh.SmoothMeshLines('all',max_res,1.4)
@@ -128,9 +132,9 @@ def SimulateEmbeddedFarfield(freq,hs,centers,L,W,theta,phi,eid=0):
     for idx in range(centers.shape[0]):
         this_center = centers[idx,:]
         if idx==0:
-            excite=True
+            excite=1.0
         else:
-            excite=False
+            excite=1.0
         [CSX,FDTD,mesh,port] = makePatch(FDTD,CSX,mesh,this_center,L,W,hs,max_res,idx,excite)
         ports.append(port)
 

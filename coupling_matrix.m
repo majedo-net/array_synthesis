@@ -1,5 +1,7 @@
 %% Read the full array simulated coupling matrix
-
+smnf = fileread('results\fullarray_smn.txt');
+Sf = textscan(smnf,'(%f)',37*37);
+smnf = reshape(Sf{1},[37,37]);
 %% Construct the tessellated array coupling matrix
 smn = zeros([37,37]);
 for idx=linspace(0,36,37)
@@ -9,3 +11,8 @@ for idx=linspace(0,36,37)
     sps = S{1}(8:14);
     smn(idx+1,neighb_id+1) = sps;
 end
+%smnf = smnf./max(smnf,[],'all');
+%smn = smn./max(smn,[],'all');
+% frobenius norm of difference
+nf = norm(smnf-smn,'fro');
+disp(nf);
