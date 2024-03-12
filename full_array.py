@@ -48,8 +48,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     with open('/results/times.txt',mode='a') as f:
         f.write(f'start: {datetime.datetime.now()}\n')
-    #d= rps(6e9,1,3)
-        d= rps(6e9,1,0)
+    d= rps(6e9,1,3)
     xs, ys = circ_positions(d)
     rs = np.array([5,-10,3,20])
     #xs,ys = rotate(xs,ys,rs,d)
@@ -74,7 +73,7 @@ if __name__ == '__main__':
         centers = np.vstack((xs,ys)).T*1000
         smn,Enorm = psim.SimulateFullArray(freq,hs,centers,L,W,theta,phi)
         print(f'smn shape: {smn[:,:,151].shape}\n')
-        np.savetxt('/results/fullarray_smn.txt',smn)
+        np.savetxt('/results/fullarray_smn.txt',smn[:,:,151])
     with open('/results/times.txt',mode='a') as f:
         f.write(f'end: {datetime.datetime.now()}')
 

@@ -86,8 +86,8 @@ def SimulateFullArray(freq,hs,centers,L,W,theta,phi):
     
     for midx in range(centers.shape[0]):
         for nidx in range(centers.shape[0]):
-            pm = ports[idx].uf_ref
-            pn = ports[idx].uf_inc
+            pm = ports[midx].uf_ref
+            pn = ports[nidx].uf_inc
             smn[midx,nidx,:] = pm/pn
 
     print(smn.shape)
