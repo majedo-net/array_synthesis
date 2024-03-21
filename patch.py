@@ -48,7 +48,7 @@ def SimulateFullArray(freq,hs,centers,L,W,theta,phi):
     
     Sim_dir = os.path.join(tempfile.gettempdir(),f'patch_sim')
     # size of the simulation box
-    SimBox = np.array([padding+W*2+np.max(np.abs(centers[:,0])), padding+L*2+np.max(np.abs(centers[:,1])), padding+hs])
+    SimBox = np.array([padding+W*2+np.max(np.abs(centers[:,0])), padding+L*2+np.max(np.abs(centers[:,1])), np.max(np.abs(centers[:,1])/2)+padding+hs])
 
 
     ## setup FDTD parameter & excitation function

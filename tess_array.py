@@ -21,7 +21,7 @@ def getNearestNeighbors(xs,ys,idx,neighbors):
 
 def getElementParams(xs,ys,eid,freq,hs,L,W,theta,phi):
     # prepare element parameters for a multi processing worker
-    txs,tys,neighbor_indexes = getNearestNeighbors(xs,ys,eid,6)
+    txs,tys,neighbor_indexes = getNearestNeighbors(xs,ys,eid,10)
     centers = np.vstack((txs,tys)).T*1000
     centers = centers - centers[0,:]
     return [freq,hs,centers,neighbor_indexes,L,W,theta,phi,eid]
