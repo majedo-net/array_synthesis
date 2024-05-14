@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial import KDTree
+from patchAntenna import PatchAntenna
 
 class Array():
     '''
@@ -9,6 +10,7 @@ class Array():
 
     def __init__(self,_freqs):
         self.freqs = _freqs
+        self.elements = []
         return
 
     def circ_count(self,len_d, count=0):
@@ -18,7 +20,7 @@ class Array():
         len_d = len_d-1
         return circ_count(len_d,count)
 
-    def rps(fmax,r,N):
+    def rps(self,fmax,r,N):
         d0 = (3e8/fmax)/2
         if r >=1:
             xi = 1
@@ -58,6 +60,21 @@ class Array():
         self.N = len(self.xs)
         if rotations is not None:
             self.rotate_positions(rotations)
+        self.xmax = np.max(np.abs(self.xs))
+        self.ymax = np.max(np.abs(self.ys))
+
+    def initPatchElements(self):
+        for id in range(len(self.xs)):
+            self.elements.append(PatchAntenna(
+                id,
+                L_=10.2,
+                W_=15.5,
+                x_=self.xs[id],
+                y_=self.ys[id],
+                hs_=1.5,
+                epsr_=4.2))
+
+
 
 
 
