@@ -69,6 +69,7 @@ def makeUVPlot(theta,phi,G,title,filename):
     fig.colorbar(CS,label='Gain (dBi)')
     ax.set_title(title,weight='bold',fontsize=14)
     fig.savefig(filename, dpi=600)
+    plt.close()
     return
 
 def Beamwidth(theta,Arrf):
