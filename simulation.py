@@ -21,7 +21,7 @@ class Simulation():
         self.f_start=0.8*self.freq
         self.f_stop=1.2*self.freq
         self.max_res=np.floor(C0 / self.f_stop / self.unit / 20)
-        self.padding = self.max_res * 20
+        self.padding = self.max_res * 20 +20
 
         self.FDTD = openEMS(EndCriteria=1e-4,NrTS=5e6)
         self.FDTD.SetGaussExcite(0.5*(self.f_start+self.f_stop),0.5*(self.f_stop-self.f_start))
@@ -51,10 +51,10 @@ class Simulation():
         self.mesh.SmoothMeshLines('all',self.max_res,1.4)
 
     def runSim(self):
-        self.nf2ff = self.FDTD.CreateNF2FFBox()
+        #self.nf2ff = self.FDTD.CreateNF2FFBox()
         self.CSX.Write2XML(f'{self.results_dir}/csx{self.id}.xml')
         self.FDTD.Run(self.simdir, cleanup=True)
-        self.ffres = self.nf2ff.CalcNF2FF(self.simdir,self.freq,self.thetas,self.phis)
+        #self.ffres = self.nf2ff.CalcNF2FF(self.simdir,self.freq,self.thetas,self.phis)
         self.sfreqs = np.linspace(self.f_start,self.f_stop,301)
         self.smn = np.zeros([len(self.ports),len(self.ports),self.sfreqs.shape[0]],dtype=np.complex128)
         self.s11 = np.zeros([len(self.ports),self.sfreqs.shape[0]],dtype=np.complex128)

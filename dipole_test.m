@@ -26,7 +26,7 @@ lambda_min = c0/f_stop;
 mesh_res_air = lambda_min/20/unit;
 mesh_res_phantom = 0.5;
 
-dipole_length = 0.435*lambda0/unit;
+dipole_length = 0.445*lambda0/unit;
 disp(['Lambda-half dipole length: ' num2str(dipole_length) 'mm'])
 
 %%
@@ -41,15 +41,15 @@ CSX = InitCSX();
 
 %% Dipole
 CSX = AddMetal( CSX, 'Dipole' ); % create a perfect electric conductor (PEC)
-CSX = AddBox(CSX, 'Dipole', 1, [0 0 -dipole_length/2], [0 0 dipole_length/2]);
+CSX = AddBox(CSX, 'Dipole', 1, [-0.5 -0.5 -dipole_length/2], [0.5 0.5 dipole_length/2]);
 
 % mesh lines for the dipole
-mesh.x = 0;
-mesh.y = 0;
+mesh.x = [-0.5 0.5];
+mesh.y = [-0.5 0.5];
 mesh.z = [-dipole_length/2-[-1/3 2/3]*mesh_res_phantom dipole_length/2+[-1/3 2/3]*mesh_res_phantom];
 
 %% apply the excitation & resist as a current source
-[CSX, port] = AddLumpedPort(CSX, 100, 1, feed.R, [-0.1 -0.1 -mesh_res_phantom/2], [0.1 0.1 +mesh_res_phantom/2], [0 0 1], true);
+[CSX, port] = AddLumpedPort(CSX, 100, 1, feed.R, [-0.5 -0.5 -mesh_res_phantom/2], [0.5 0.5 +mesh_res_phantom/2], [0 0 1], true);
 
 % mesh lines for the port
 mesh.z = [mesh.z -mesh_res_phantom/2 +mesh_res_phantom/2];
