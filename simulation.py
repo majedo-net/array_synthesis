@@ -55,17 +55,19 @@ class Simulation():
         self.CSX.Write2XML(f'{self.results_dir}/csx{self.id}.xml')
         self.FDTD.Run(self.simdir, cleanup=True)
         self.ffres = self.nf2ff.CalcNF2FF(self.simdir,self.freq,self.thetas,self.phis)
-        sfreqs = np.linspace(self.f_start,self.f_stop,301)
-        self.smn = np.zeros([len(self.ports),len(self.ports),sfreqs.shape[0]],dtype=np.complex128)
+        self.sfreqs = np.linspace(self.f_start,self.f_stop,301)
+        self.smn = np.zeros([len(self.ports),len(self.ports),self.sfreqs.shape[0]],dtype=np.complex128)
+        self.s11 = np.zeros([len(self.ports),self.sfreqs.shape[0]],dtype=np.complex128)
         for idx in range(len(self.ports)):
             print(f'calculating port {idx}')
-            self.ports[idx].CalcPort(self.simdir,sfreqs)
-    
+            self.ports[idx].CalcPort(self.simdir,self.sfreqs)
         for midx in range(len(self.ports)):
             for nidx in range(len(self.ports)):
                 pm = self.ports[midx].uf_ref
                 pn = self.ports[nidx].uf_inc
                 self.smn[midx,nidx,:] = pm/pn
+                if midx==nidx:
+                    self.s11[midx,:] = pm/pn
 
 
 

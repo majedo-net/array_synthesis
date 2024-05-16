@@ -4,8 +4,8 @@ from openEMS import openEMS
 from openEMS.physical_constants import *
 
 class DipoleAntenna(Antenna):
-    def __init__(self,id_,f0,x_,y_,orientation_='x'):
-        super().__init__(id_,'Dipole')
+    def __init__(self,id_,f0,x_,y_,orientation_='x',excite_=True):
+        super().__init__(id_,'Dipole',excite_=excite_)
         lamb = 3e8/f0
         self.L = 0.435*lamb*1000
         self.x= x_

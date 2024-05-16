@@ -12,6 +12,9 @@ build-tessarray:
 build-array:
 	docker build -t fullarray:latest -f Dockerfile.python-array .
 
+build-full:
+	docker build -t fullarray:latest -f Dockerfile.full-array .
+
 run:
 	docker run --privileged -it -v /data/pso_results:/results array_synth:latest
 
@@ -26,12 +29,12 @@ run-tessarray:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results:/results \
+	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\nr12:/results \
 	tessarray:latest
 
-run-array:
+run-full:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results:/results \
+	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole\full:/results \
 	fullarray:latest

@@ -36,7 +36,7 @@ class AntennaArray():
         self.xs = [] 
         self.ys = [] 
         for n,dn in enumerate(d):
-            n_layer = (2*n) +6
+            n_layer = (2*n) + 6
             wd = (2*np.pi/n_layer)
             for w in np.arange(0,(2*np.pi),wd):
                 self.xs.append(dn*np.cos(w))
@@ -99,14 +99,17 @@ class AntennaArray():
                 epsr_=4.2))
         self.zmax = 10
 
-    def initDipoleElements(self,f0,orientation='x'):
+    def initDipoleElements(self,f0,orientation='x',excite_idx=[]):
         for id in range(len(self.xs)):
+            excite=False
+            if id in excite_idx: excite = True
             self.elements.append(DipoleAntenna(
                 id,
                 f0,
                 x_=self.xs[id],
                 y_=self.ys[id],
-                orientation_=orientation
+                orientation_=orientation,
+                excite_=excite
             ))
         if orientation== 'z': self.zmax = 30
 

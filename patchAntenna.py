@@ -1,6 +1,5 @@
 from antenna import Antenna
 import os 
-os.add_dll_directory('C:/openEMS/openEMS')
 from CSXCAD import ContinuousStructure
 from openEMS import openEMS
 from openEMS.physical_constants import *
