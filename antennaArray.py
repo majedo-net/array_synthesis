@@ -9,8 +9,8 @@ class AntennaArray():
 
     '''
 
-    def __init__(self,elements_=[]):
-        self.elements = elements_
+    def __init__(self):
+        self.elements = []
         return
 
     def circ_count(self,len_d, count=0):
