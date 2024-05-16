@@ -7,9 +7,10 @@ from shutil import rmtree
 
 
 if __name__ == '__main__':
+    Nr = 8
     for idx in range(37):
         print('==================')
-        print(f'Running Element {idx}')
+        print(f'Running Element {idx} Tess Array')
         print('==================')
         ant_array = AntennaArray()
         freq = 6e9
@@ -18,15 +19,19 @@ if __name__ == '__main__':
         ant_array.generateRPSPositions(fmax=6e9,r=1,Nrps=3)
         ant_array.excite_idx = idx
         ant_array.initDipoleElements(freq,orientation='z')
+        tess_array = ant_array.getNearestNeighborSA(idx,Nr)
         theta = np.linspace(0, np.pi, 181)
         phi = np.linspace(0, 2*np.pi, 361)
-        sim = Simulation(freq,theta,phi,ant_array,results_dir,id_=idx)
+        sim = Simulation(freq,theta,phi,tess_array,results_dir,id_=idx)
         sim.makeElementSims()
-        sim.runSimFull()
+        sim.runSim()
         os.chdir(cwd)
-        np.savetxt(f'{results_dir}/fullarray_sm{idx}.txt',sim.smn[:,151])
-        np.savetxt(f'{results_dir}/full_s11_{idx}.txt',(sim.sfreqs,sim.s11))
+        nids = []
+        for el in sim.array.elements: nids.append(el.id)
+        print(nids)
+        np.savetxt(f'{results_dir}/sm{idx}.txt',(nids,sim.smn[:,151]))
+        np.savetxt(f'{results_dir}/s11_{idx}.txt',(sim.sfreqs,sim.s11))
         simdir = sim.simdir
         del sim
-        del ant_array
+        del ant_array, tess_array
         rmtree(simdir,ignore_errors=True)

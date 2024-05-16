@@ -6,8 +6,8 @@ build:
 build-spiral-python:
 	docker build -t spiral_python:latest spiral/.
 
-build-tessarray:
-	docker build -t tessarray:latest -f Dockerfile.python .
+build-tess:
+	docker build -t tessarray:latest -f Dockerfile.tess-array .
 
 build-array:
 	docker build -t fullarray:latest -f Dockerfile.python-array .
@@ -25,11 +25,11 @@ run-spiral-python:
 	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results:/results \
 	spiral_python:latest
 
-run-tessarray:
+run-tess:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\nr12:/results \
+	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole/tess/nr8:/results \
 	tessarray:latest
 
 run-full:

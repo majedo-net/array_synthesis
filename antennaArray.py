@@ -65,6 +65,15 @@ class AntennaArray():
         self.ymax = np.max(np.abs(self.ys))
         self.zmax = 0
 
+    def getNearestNeighborSA(self,idx,Nr):
+        '''
+        generates the nearest neighbor subarray object
+        '''
+        points = list(zip(self.xs.ravel(),self.ys.ravel()))
+        tree = KDTree(points)
+        ds,idxes = tree.query([self.xs[idx],self.ys[idx]],k=(Nr+1))
+        return self.generateSubarray(idxes)
+
     def generateSubarray(self,ids):
         '''
         generates a new array object with a subset of the elements for use in subarray simulations.
@@ -72,15 +81,19 @@ class AntennaArray():
         new_elements = []
         for idx in ids:
             new_elements.append(self.elements[idx])
-        ta = AntennaArray(new_elements)
+        ta = AntennaArray()
+        ta.elements = new_elements
+        ta.xs = []
+        ta.ys = []
         for idx in ids:
-            ta.xs.append(new_elements[idx].x)
-            ta.ys.append(new_elements[idx].y)
+            ta.xs.append(self.elements[idx].x)
+            ta.ys.append(self.elements[idx].y)
         ta.xmax = np.max(ta.xs)
         ta.xmin = np.min(ta.xs)
         ta.ymax = np.max(ta.ys)
         ta.ymin = np.min(ta.ys)
-        for idx in ids:
+        ta.zmax = self.zmax
+        for idx in range(len(ta.elements)):
             ta.elements[idx].x -= (ta.xmax-ta.xmin)/2
             ta.elements[idx].y -= (ta.ymax-ta.ymin)/2
             ta.xs[idx] -=(ta.xmax-ta.xmin)/2
@@ -99,10 +112,10 @@ class AntennaArray():
                 epsr_=4.2))
         self.zmax = 10
 
-    def initDipoleElements(self,f0,orientation='x',excite_idx=[]):
+    def initDipoleElements(self,f0,orientation='x'):
         for id in range(len(self.xs)):
             excite=False
-            if id in excite_idx: excite = True
+            if id == self.excite_idx: excite = True
             self.elements.append(DipoleAntenna(
                 id,
                 f0,
