@@ -29,12 +29,12 @@ run-tess:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole/tess/nr8:/results \
+	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole/tess:/results \
 	tessarray:latest
 
 run-full:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole\full:/results \
+	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole\NP5/full:/results \
 	fullarray:latest

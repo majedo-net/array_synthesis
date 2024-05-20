@@ -7,7 +7,7 @@ from shutil import rmtree
 
 
 if __name__ == '__main__':
-    for idx in range(37):
+    for idx in range(67):
         print('==================')
         print(f'Running Element {idx}')
         print('==================')
@@ -15,7 +15,7 @@ if __name__ == '__main__':
         freq = 6e9
         results_dir = '/results'
         cwd = os.getcwd()
-        ant_array.generateRPSPositions(fmax=6e9,r=1,Nrps=3)
+        ant_array.generateRPSPositions(fmax=6e9,r=1,Nrps=5)
         ant_array.excite_idx = idx
         ant_array.initDipoleElements(freq,orientation='z')
         theta = np.linspace(0, np.pi, 181)

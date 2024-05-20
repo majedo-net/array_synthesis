@@ -23,7 +23,7 @@ end
 %% Dipole Z
 smn = zeros([37,37]);
 smnf = zeros([37,37]);
-nrsd = [4,6];
+nrsd = [4,6,8,10,12,14,16,18];
 nfd = [];
 for nid=1:numel(nrsd)
     nr = nrsd(nid);
@@ -41,9 +41,32 @@ for nid=1:numel(nrsd)
     nfd(end+1) = sqrt(norm(smnf-smn,'fro'));
 end
 
-plot(nrsp,nfp,'bs-'); hold on;
-plot(nrsd,nfd,'ko-');
+%% 67 dipole
+smn = zeros([67,67]);
+smnf = zeros([67,67]);
+nrsd = [4,6,8,10,12,14,16,18];
+nfd67 = [];
+for nid=1:numel(nrsd)
+    nr = nrsd(nid);
+    for idx = linspace(0,66,67)
+        sp = fileread(sprintf('results/aws-tess-array/dipole/NP5/full/fullarray_sm%i.txt',idx));
+        S=textscan(sp,'(%f)',67);
+        sps = S{1};
+        smnf(idx+1,:) = sps;
+        sp = fileread(sprintf('results/aws-tess-array/dipole/NP5/tess/nr%i/sm%i.txt',nr,idx));
+        S=textscan(sp,'(%f)',2*nr+2);
+        neighb_id = int32(S{1}(1:nr+1));
+        sps = S{1}(nr+2:2*nr+2);
+        smn(idx+1,neighb_id+1) = sps;
+    end
+    nfd67(end+1) = sqrt(norm(smnf-smn,'fro'));
+end
+
+%plot(nrsp,nfp,'bs-'); hold on;
+plot(nrsd,nfd,'ko-'); hold on;
+plot(nrsd,nfd67,'r^-');
 grid minor;
-xlim([2 14]);
+xlim([2 20]);
 xlabel('$N_R$ Nearest Neighbors','Interpreter','latex');
 ylabel('$|S_f - S_t|_F$','Interpreter','latex');
+legend('Dipole 37 Elements','Dipole 67 Elements');
