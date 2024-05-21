@@ -20,12 +20,14 @@ class Simulation():
         self.results_dir=results_dir_
         self.f_start=0.8*self.freq
         self.f_stop=1.2*self.freq
-        self.max_res=np.floor(C0 / self.f_stop / self.unit / 20)
-        self.padding = self.max_res * 20 +20
+        self.max_res=np.floor(C0 / self.f_stop / self.unit / 15)
+        self.padding = (self.max_res * 15) 
 
         self.FDTD = openEMS(EndCriteria=1e-4,NrTS=5e6)
         self.FDTD.SetGaussExcite(0.5*(self.f_start+self.f_stop),0.5*(self.f_stop-self.f_start))
         self.FDTD.SetBoundaryCond(['PML_8', 'PML_8', 'PML_8', 'PML_8', 'PEC', 'PML_8']) # boundary conditions
+        self.array.xmax = np.max([self.array.xmax, np.abs(self.array.xmin)])
+        self.array.ymax = np.max([self.array.ymax, np.abs(self.array.ymin)])
         self.SimBox = np.array([self.padding+self.array.xmax, self.padding+self.array.ymax, self.padding+self.array.zmax])
         self.CSX = ContinuousStructure()
         self.FDTD.SetCSX(self.CSX)
@@ -33,9 +35,12 @@ class Simulation():
         self.mesh.SetDeltaUnit(self.unit)
         self.ports = []
 
-        self.mesh.AddLine('x', [-self.SimBox[0]/2, self.SimBox[0]/2])
-        self.mesh.AddLine('y', [-self.SimBox[1]/2, self.SimBox[1]/2])
+        self.mesh.AddLine('x', [-self.SimBox[0], self.SimBox[0]])
+        self.mesh.AddLine('y', [-self.SimBox[1], self.SimBox[1]])
         self.mesh.AddLine('z', [0,self.SimBox[2]])
+        print(f'xmax = {self.array.xmax}')
+        print(f'ymax = {self.array.ymax}')
+        print(f'sim box = {self.SimBox}')
 
     def makeElementSims(self):
         for el in self.array.elements:
@@ -48,7 +53,9 @@ class Simulation():
         if self.array.elements[0].ant_type=='Dipole': 
             self.mesh.AddLine('z', [-self.SimBox[2]/2,self.SimBox[2]/2])
 
-        self.mesh.SmoothMeshLines('all',self.max_res,1.4)
+        self.mesh.SmoothMeshLines('all',self.max_res,1.8)
+        self.mesh.SetLines('x',np.round(self.mesh.GetLines('x',do_sort=True),1))
+        self.mesh.SetLines('y',np.round(self.mesh.GetLines('y',do_sort=True),1))
 
     def runSim(self):
         #self.nf2ff = self.FDTD.CreateNF2FFBox()
