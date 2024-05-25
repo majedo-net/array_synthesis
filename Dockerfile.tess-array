@@ -8,4 +8,4 @@ WORKDIR /
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 COPY *.py .
-ENTRYPOINT python3 -u runTessArray.py
+ENTRYPOINT python3 -u runTessArrayMP.py

@@ -21,19 +21,19 @@ class PatchAntenna(Antenna):
         patch.AddBox(priority=10, start=start, stop=stop)
         mesh.AddLine('x',[start[0],stop[0]])
         mesh.AddLine('y',[start[1],stop[1]])
-        FDTD.AddEdges2Grid(dirs='xy',properties=patch,metal_edge_res=max_res)
 
         substrate=CSX.AddMaterial(f'substrate{self.id}')
         substrate.SetMaterialProperty(epsilon=self.epsr)
-        start = [self.x-self.W, self.y-self.L, 0]
-        stop = [self.x+self.W, self.y+self.L, self.hs]
+        start = [self.x-0.6*self.W, self.y-0.6*self.L, 0]
+        stop = [self.x+0.6*self.W, self.y+0.6*self.L, self.hs]
         substrate.AddBox(start=start, stop=stop, priority=0)
-
+        mesh.AddLine('x',[start[0],stop[0]])
+        mesh.AddLine('y',[start[1],stop[1]])
+        
         ground =CSX.AddMetal(f'ground{self.id}')
-        start = [self.x-self.W, self.y-self.L, 0]
-        stop = [self.x+self.W, self.y+self.L, 0]
+        start = [self.x-0.6*self.W, self.y-0.6*self.L, 0]
+        stop = [self.x+0.6*self.W, self.y+0.6*self.L, 0]
         ground.AddBox(start=start,stop=stop,priority=10)
-        FDTD.AddEdges2Grid(dirs='xy',properties=ground)
 
         mesh.AddLine('z', np.linspace(0,self.hs,5))
 

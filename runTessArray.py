@@ -7,7 +7,7 @@ from shutil import rmtree
 
 
 if __name__ == '__main__':
-    Nrs = [10,12]
+    Nrs = [4,6,8,10,12,14,16]
     for Nr in Nrs:
         for idx in range(37):
             print('==================')
@@ -19,7 +19,7 @@ if __name__ == '__main__':
             cwd = os.getcwd()
             ant_array.generateRPSPositions(fmax=6e9,r=1,Nrps=3)
             ant_array.excite_idx = idx
-            ant_array.initDipoleElements(freq,orientation='z')
+            ant_array.initDipoleElements(freq,orientation='y')
             tess_array = ant_array.getNearestNeighborSA(idx,Nr)
             theta = np.linspace(0, np.pi, 181)
             phi = np.linspace(0, 2*np.pi, 361)
