@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import h5py
 from multiprocessing import Pool
 from shutil import rmtree
 from antennaArray import AntennaArray
@@ -35,6 +36,17 @@ def run_simulation(Nr_idx):
     
     np.savetxt(f'{results_dir}/sm{idx}.txt', (nids, sim.smn[:, 151]))
     np.savetxt(f'{results_dir}/s11_{idx}.txt', (sim.sfreqs, sim.s11))
+    # Save HDF5 results
+    with h5py.File(f'{results_dir}/element{idx}.hdf5','w') as f:
+        smn = f.create_dataset('smn',data=sim.smn,compression='gzip')
+        sfreqs = f.create_dataset('sfreqs',data=sim.sfreqs,compression='gzip')
+        eth = f.create_dataset('eth',data=sim.eth,compression='gzip')
+        eth.attrs['freq'] = sim.freq
+        eph = f.create_dataset('eph',data=sim.eph,compression='gzip')
+        eph.attrs['freq'] = sim.freq
+        dmax = f.create_dataset('dmax',data=sim.dmax,compression='gzip')
+        dmax.attrs['freq'] = sim.freq
+
     
     simdir = sim.simdir
     del sim

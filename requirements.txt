@@ -2,5 +2,6 @@ matplotlib
 cython
 setuptools
 numpy
+h5py
 scipy==1.9.3
 pyswarms
