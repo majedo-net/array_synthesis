@@ -29,7 +29,7 @@ run-tess:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole/y/tess:/results \
+	--volume=/home/ubuntu/results/z:/results \
 	tessarray:latest
 
 run-full:
