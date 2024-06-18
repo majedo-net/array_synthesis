@@ -43,6 +43,7 @@ class Simulation():
         print(f'sim box = {self.SimBox}')
 
     def makeElementSims(self):
+        print(f'Making element sims, id={self.id}')
         for el in self.array.elements:
             [CSX, FDTD, mesh, port] = el.makeSim(self.FDTD,self.CSX,self.mesh,el.excite,self.max_res)
             self.CSX = CSX
@@ -58,6 +59,7 @@ class Simulation():
         self.mesh.SetLines('y',np.round(self.mesh.GetLines('y',do_sort=True),1))
 
     def runSim(self):
+        print(f'Running sim, id={self.id}')
         self.nf2ff = self.FDTD.CreateNF2FFBox()
         self.CSX.Write2XML(f'{self.results_dir}/csx{self.id}.xml')
         self.FDTD.Run(self.simdir, cleanup=True)
