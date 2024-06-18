@@ -9,6 +9,9 @@ build-spiral-python:
 build-tess:
 	docker build -t tessarray:latest -f Dockerfile.tess-array .
 
+build-ct:
+	docker build -t ct:latest -f Dockerfile.coupling .
+
 build-array:
 	docker build -t fullarray:latest -f Dockerfile.python-array .
 
@@ -38,3 +41,10 @@ run-full:
 	--net=host \
 	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole/y/full:/results \
 	fullarray:latest
+
+run-ct:
+	docker run -it --rm \
+		--user 1000 \
+		--net=host \
+		--volume=/home/ubuntu/results/ct/y:/results \
+		ct:latest

@@ -11,6 +11,7 @@ class AntennaArray():
 
     def __init__(self):
         self.elements = []
+        self.excite_idx = None
         return
 
     def circ_count(self,len_d, count=0):
