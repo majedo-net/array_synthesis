@@ -56,5 +56,6 @@ Nrs = [3,4,5,5.5,6,6.5]
 Nr_idx_list = [(idx,Nr) for idx,Nr in enumerate(Nrs)]
 
 # Create a Pool of workers to run simulations in parallel
-with Pool(int(os.cpu_count()/4)) as pool:
-    pool.map(run_simulation, Nr_idx_list)
+#with Pool(int(os.cpu_count()/4)) as pool:
+#    pool.map(run_simulation, Nr_idx_list)
+run_simulation(Nr_idx_list[0])
