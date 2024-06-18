@@ -7,7 +7,7 @@ from antennaArray import AntennaArray
 from simulation import Simulation
 
 def run_simulation(Nr_idx):
-    fc, idx = Nr_idx
+    idx, fc = Nr_idx
     print('==================')
     print(f'Running Element fc = {fc}GHz')
     print('==================')
@@ -53,7 +53,7 @@ def run_simulation(Nr_idx):
 
 # This is now the half wavelength freq in ghz
 Nrs = [3,4,5,5.5,6,6.5]
-Nr_idx_list = [(Nr, idx) for Nr in Nrs for idx in range(37)]
+Nr_idx_list = [(idx,Nr) for idx,Nr in enumerate(Nrs)]
 
 # Create a Pool of workers to run simulations in parallel
 with Pool(int(os.cpu_count()/4)) as pool:
