@@ -68,6 +68,11 @@ class AntennaArray():
         self.ymin = np.min(self.ys)
         self.zmax = 0
 
+    def generateSingle(self):
+        self.N = 1
+        self.xs = [0.0]
+        self.ys = [0.0]
+
     def getNearestNeighborSA(self,idx,Nr):
         '''
         generates the nearest neighbor subarray object

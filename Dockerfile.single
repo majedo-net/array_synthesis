@@ -1,0 +1,11 @@
+FROM openems:latest
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=0
+WORKDIR /
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+COPY *.py ./
+ENTRYPOINT python3 -u runSingle.py
