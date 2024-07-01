@@ -19,7 +19,7 @@ def run_simulation(Nr_idx):
     
     ant_array.generateRPSPositions(fmax=6e9, r=1, Nrps=5)
     ant_array.excite_idx = idx
-    ant_array.initDipoleElements(freq, orientation='z')
+    ant_array.initDipoleElements(freq, orientation='y')
     tess_array = ant_array.getNearestNeighborSA(idx, Nr)
     
     theta = np.linspace(0, np.pi, 181)
@@ -37,7 +37,7 @@ def run_simulation(Nr_idx):
     #np.savetxt(f'{results_dir}/sm{idx}.txt', (nids, sim.smn[:, 151]))
     #np.savetxt(f'{results_dir}/s11_{idx}.txt', (sim.sfreqs, sim.s11))
     # Save HDF5 results
-    with h5py.File(f'{results_dir}/element{idx}.hdf5','r+') as f:
+    with h5py.File(f'{results_dir}/element{idx}.hdf5','w') as f:
         nids = f.create_dataset('nids',data=nids)
         f.attrs['x'] = sim.array.elements[0].x
         f.attrs['y'] = sim.array.elements[0].y
@@ -56,8 +56,8 @@ def run_simulation(Nr_idx):
     del ant_array, tess_array
     rmtree(simdir, ignore_errors=True)
 
-Nrs = [18,20,24,28,32,36,40,44,48,52,58]
-Nr_idx_list = [(Nr, idx) for Nr in Nrs for idx in range(37)]
+Nrs = [4,6,8,10,12,14,16]
+Nr_idx_list = [(Nr, idx) for Nr in Nrs for idx in range(67)]
 
 # Create a Pool of workers to run simulations in parallel
 with Pool(int(os.cpu_count()/4)) as pool:

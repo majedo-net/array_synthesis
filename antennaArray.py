@@ -72,6 +72,11 @@ class AntennaArray():
         self.N = 1
         self.xs = [0.0]
         self.ys = [0.0]
+        self.xmax = np.max(np.abs(self.xs))
+        self.ymax = np.max(np.abs(self.ys))
+        self.xmin = np.min(self.xs)
+        self.ymin = np.min(self.ys)
+        self.zmax = 0
 
     def getNearestNeighborSA(self,idx,Nr):
         '''

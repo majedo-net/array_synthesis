@@ -15,7 +15,7 @@ if __name__ == '__main__':
     freq = 6e9
     results_dir = '/results'
     cwd = os.getcwd()
-    ant_array.generateRPSPositions(fmax=6e9,r=1,Nrps=3)
+    ant_array.generateSingle()
     ant_array.excite_idx = idx
     #ant_array.initPatchElements()
     ant_array.initDipoleElements(freq,orientation='y')

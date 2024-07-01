@@ -13,7 +13,7 @@ build-ct:
 	docker build -t ct:latest -f Dockerfile.coupling .
 
 build-single:
-	docker build -t single:latest -f Dockerfile.coupling .
+	docker build -t single:latest -f Dockerfile.single .
 
 build-array:
 	docker build -t fullarray:latest -f Dockerfile.python-array .
@@ -35,7 +35,7 @@ run-tess:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=/home/ubuntu/results/z:/results \
+	--volume=/home/ubuntu/results/tess/y/NP5:/results \
 	tessarray:latest
 
 run-full:
@@ -55,6 +55,6 @@ run-ct:
 run-single:
 	docker run -it --rm \
 		--user 1000 \
-		--net=host \ 
-		--volume=/home/ubuntu/results:results \
+		--net=host \
+		--volume=/home/ubuntu/results:/results \
 		single:latest
