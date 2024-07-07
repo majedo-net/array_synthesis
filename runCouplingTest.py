@@ -9,7 +9,7 @@ from simulation import Simulation
 def run_simulation(Nr_idx):
     idx, fc = Nr_idx
     print('==================')
-    print(f'Running Element fc = {fc}GHz')
+    print(f'Running Element fc = {fc}GHz, idx = {idx}')
     print('==================')
     fc = fc*1e9
     
@@ -19,8 +19,9 @@ def run_simulation(Nr_idx):
     cwd = os.getcwd()
     
     ant_array.generateRPSPositions(fmax=fc, r=1, Nrps=0)
-    ant_array.excite_idx = idx
-    ant_array.initDipoleElements(freq, orientation='y')
+    ant_array.excite_idx = 0
+    #ant_array.initDipoleElements(freq, orientation='z')
+    ant_array.initPatchElements()
     
     theta = np.linspace(0, np.pi, 181)
     phi = np.linspace(0, 2*np.pi, 361)
@@ -53,7 +54,7 @@ def run_simulation(Nr_idx):
     rmtree(simdir, ignore_errors=True)
 
 # This is now the half wavelength freq in ghz
-Nrs = [3,4,5,5.5,6,6.5]
+Nrs = [1.5,1.6,1.7,1.8,1.9,2,2.25,2.5,2.75,3,4,5,5.5,6,6.5]
 Nr_idx_list = [(idx,Nr) for idx,Nr in enumerate(Nrs)]
 
 # Create a Pool of workers to run simulations in parallel

@@ -42,14 +42,14 @@ run-full:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=C:\Users\mattj\Documents\CSM\array_synthesis\results\aws-tess-array\dipole/y/full:/results \
+	--volume=/home/ubuntu/results/tess/y/NP5/full:/results \
 	fullarray:latest
 
 run-ct:
 	docker run -it --rm \
 		--user 1000 \
 		--net=host \
-		--volume=/home/ubuntu/results/ct/y:/results \
+		--volume=/home/ubuntu/results/ct/patch:/results \
 		ct:latest
 
 run-single:
