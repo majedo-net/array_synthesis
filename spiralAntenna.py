@@ -10,11 +10,14 @@ class SpiralAntenna(Antenna):
         super().__init__(id_,'Spiral')
         self.x = x_
         self.y = y_
-        self.r0=r0_
-        self.rmax=rmax_
+        # these units in mm
+        unit = 1e-3
+        self.r0=r0_*unit
+        self.rmax=rmax_*unit
+        self.h=h_*unit
+        self.hs = hs_*unit
+
         self.alpha=alpha_
-        self.h=h_
-        self.hs = hs_
         self.epsr=epsr_
 
     def makeSim(self,FDTD,CSX,mesh,excite,max_res):

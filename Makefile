@@ -56,5 +56,5 @@ run-single:
 	docker run -it --rm \
 		--user 1000 \
 		--net=host \
-		--volume=/home/ubuntu/results:/results \
+		--volume=/home/ubuntu/results/spiral:/results \
 		single:latest
