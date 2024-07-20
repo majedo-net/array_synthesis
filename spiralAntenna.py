@@ -36,10 +36,11 @@ class SpiralAntenna(Antenna):
         bp[0,:] = np.hstack((0,r,r[-1]*np.ones(50),np.flip(r),0))
         bp[1,:] = np.hstack((0,a3,np.linspace(a3[-1],a4[-1],50),np.flip(a4),0))
 
+        h = self.h
+        hs = self.hs
         mesh.AddLine('x', [self.x-self.r0, self.x-0.25, self.x+0.25, self.x+self.r0])
         mesh.AddLine('y', [self.y-self.r0, self.y-0.25, self.y+0.25, self.y+self.r0])
-        zlines = np.linspace(self.h-self.hs,self.h+self.hs,5)
-        mesh.AddLine('z', [zlines])
+        mesh.AddLine('z', [h-hs, (h-hs)+2*hs/5, (h-hs)+3*hs/5, (h-hs)+4*hs/5, h+hs])
         
         bp_cart = np.zeros_like(tp)
         tp_cart = np.zeros_like(tp)
