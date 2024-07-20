@@ -10,12 +10,10 @@ class SpiralAntenna(Antenna):
         super().__init__(id_,'Spiral')
         self.x = x_
         self.y = y_
-        # these units in mm
-        unit = 1e-3
-        self.r0=r0_*unit
-        self.rmax=rmax_*unit
-        self.h=h_*unit
-        self.hs = hs_*unit
+        self.r0=r0_
+        self.rmax=rmax_
+        self.h=h_
+        self.hs = hs_
 
         self.alpha=alpha_
         self.epsr=epsr_
