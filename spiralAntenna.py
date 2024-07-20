@@ -38,7 +38,8 @@ class SpiralAntenna(Antenna):
 
         mesh.AddLine('x', [self.x-self.r0, self.x-0.25, self.x+0.25, self.x+self.r0])
         mesh.AddLine('y', [self.y-self.r0, self.y-0.25, self.y+0.25, self.y+self.r0])
-        mesh.AddLine('z', [np.linspace(self.h-self.hs,self.h+self.hs,5)])
+        zlines = np.linspace(self.h-self.hs,self.h+self.hs,5)
+        mesh.AddLine('z', [zlines])
         
         bp_cart = np.zeros_like(tp)
         tp_cart = np.zeros_like(tp)
