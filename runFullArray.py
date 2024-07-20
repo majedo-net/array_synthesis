@@ -26,8 +26,19 @@ if __name__ == '__main__':
         sim.makeElementSims()
         sim.runSimFull()
         os.chdir(cwd)
-        np.savetxt(f'{results_dir}/fullarray_sm{idx}.txt',sim.smn[:,151])
-        np.savetxt(f'{results_dir}/full_s11_{idx}.txt',(sim.sfreqs,sim.s11))
+        with h5py.File(f'{results_dir}/element{idx}.hdf5','w') as f:
+            nids = f.create_dataset('nids',data=nids)
+            f.attrs['x'] = sim.array.elements[0].x
+            f.attrs['y'] = sim.array.elements[0].y
+            f.attrs['ant_type'] = sim.array.elements[0].ant_type
+            smn = f.create_dataset('smn',data=sim.smn,compression='gzip')
+            sfreqs = f.create_dataset('sfreqs',data=sim.sfreqs,compression='gzip')
+            eth = f.create_dataset('eth',data=sim.eth,compression='gzip')
+            eth.attrs['freq'] = sim.freq
+            eph = f.create_dataset('eph',data=sim.eph,compression='gzip')
+            eph.attrs['freq'] = sim.freq
+            dmax = f.create_dataset('dmax',data=sim.dmax,compression='gzip')
+            dmax.attrs['freq'] = sim.freq
         simdir = sim.simdir
         del sim
         del ant_array

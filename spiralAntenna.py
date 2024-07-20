@@ -61,8 +61,10 @@ class SpiralAntenna(Antenna):
         substrate=CSX.AddMaterial(f'substrate{self.id}')
         substrate.SetMaterialProperty(epsilon=self.epsr)
         start = [self.x-self.rmax, self.y-self.rmax, self.h-self.hs]
-        stop =  [self.y+self.rmax, self.y+self.rmax, self.h+self.hs]
+        stop =  [self.x+self.rmax, self.y+self.rmax, self.h+self.hs]
         substrate.AddBox(start=start, stop=stop, priority=0);
+        mesh.AddLine('x',[start[0],stop[0]])
+        mesh.AddLine('y',[start[1],stop[1]])
 
 
         # apply the excitation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
