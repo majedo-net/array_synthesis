@@ -144,6 +144,9 @@ class AntennaArray():
         hs = 0.5 # mm
         epsr = 4.5
         alpha = 0.32
+        self.xmax = np.max(np.abs(self.xs)) + rmax
+        self.yamx = np.max(np.abs(self.ys)) + rmax
+        self.zmax = 3*h
         for id in range(len(self.xs)):
             excite = False
             if id == self.excite_idx: excite = True

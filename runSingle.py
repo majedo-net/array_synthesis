@@ -19,7 +19,7 @@ if __name__ == '__main__':
     ant_array.excite_idx = idx
     #ant_array.initPatchElements()
     #ant_array.initDipoleElements(freq,orientation='y')
-    ant_array.initSpiralElements(r0=3,rmax=50,h=1)
+    ant_array.initSpiralElements(r0=3,rmax=50,h=10)
     theta = np.linspace(0, np.pi, 181)
     phi = np.linspace(0, 2*np.pi, 361)
     sim = Simulation(freq,theta,phi,ant_array,results_dir,id_=idx)
