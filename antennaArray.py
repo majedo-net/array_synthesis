@@ -140,10 +140,7 @@ class AntennaArray():
             ))
         if orientation== 'z': self.zmax = 30
 
-    def initSpiralElements(self,r0,rmax,h):
-        hs = 0.5 # mm
-        epsr = 4.5
-        alpha = 0.32
+    def initSpiralElements(self,r0,rmax,h,hs=0.5,epsr=4.5,alpha=0.32):
         self.xmax = np.max(np.abs(self.xs)) + rmax
         self.ymax = np.max(np.abs(self.ys)) + rmax
         self.zmax = 3*h
