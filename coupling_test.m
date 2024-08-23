@@ -83,3 +83,5 @@ plot(dl,10.*log10(dfz),'ro-');
 plot(dlp,10.*log10(dfp),'k<-.');
 grid minor;
 legend('Dipole Y','Dipole Z','Patch');
+xlabel('$\frac{d}{\lambda_0}$','Interpreter','latex');
+ylabel('$10log(|E_s - E_c|_F)$','Interpreter','latex');
