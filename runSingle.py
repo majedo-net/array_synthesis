@@ -18,14 +18,15 @@ if __name__ == '__main__':
     ant_array.generateSingle()
     ant_array.excite_idx = idx
     #ant_array.initPatchElements()
-    ant_array.initDipoleElements(freq,orientation='y')
+    #ant_array.initDipoleElements(freq,orientation='y')
+    ant_array.initSpiralElements(r0=3,rmax=30,h=10)
     theta = np.linspace(0, np.pi, 181)
     phi = np.linspace(0, 2*np.pi, 361)
     sim = Simulation(freq,theta,phi,ant_array,results_dir,id_=idx)
     sim.makeElementSims()
     sim.runSim()
     os.chdir(cwd)
-    with h5py.File(f'{results_dir}/single_y.hdf5','w') as f:
+    with h5py.File(f'{results_dir}/single_spiral.hdf5','w') as f:
         f.attrs['x'] = sim.array.elements[0].x
         f.attrs['y'] = sim.array.elements[0].y
         f.attrs['ant_type'] = sim.array.elements[0].ant_type

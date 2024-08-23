@@ -12,9 +12,10 @@ class SpiralAntenna(Antenna):
         self.y = y_
         self.r0=r0_
         self.rmax=rmax_
-        self.alpha=alpha_
         self.h=h_
         self.hs = hs_
+
+        self.alpha=alpha_
         self.epsr=epsr_
 
     def makeSim(self,FDTD,CSX,mesh,excite,max_res):
@@ -35,9 +36,12 @@ class SpiralAntenna(Antenna):
         bp[0,:] = np.hstack((0,r,r[-1]*np.ones(50),np.flip(r),0))
         bp[1,:] = np.hstack((0,a3,np.linspace(a3[-1],a4[-1],50),np.flip(a4),0))
 
-        #create fixed lines for the simulation box and port
+        h = self.h
+        hs = self.hs
         mesh.AddLine('x', [self.x-self.r0, self.x-0.25, self.x+0.25, self.x+self.r0])
         mesh.AddLine('y', [self.y-self.r0, self.y-0.25, self.y+0.25, self.y+self.r0])
+        mesh.AddLine('z', [h-hs, (h-hs)+2*hs/5, (h-hs)+3*hs/5, (h-hs)+4*hs/5, h+hs])
+        
         bp_cart = np.zeros_like(tp)
         tp_cart = np.zeros_like(tp)
         tp_cart[0,:] = tp[0,:] * np.cos(tp[1,:])
@@ -57,8 +61,10 @@ class SpiralAntenna(Antenna):
         substrate=CSX.AddMaterial(f'substrate{self.id}')
         substrate.SetMaterialProperty(epsilon=self.epsr)
         start = [self.x-self.rmax, self.y-self.rmax, self.h-self.hs]
-        stop =  [self.y+self.rmax, self.y+self.rmax, self.h+self.hs]
+        stop =  [self.x+self.rmax, self.y+self.rmax, self.h+self.hs]
         substrate.AddBox(start=start, stop=stop, priority=0);
+        mesh.AddLine('x',[start[0],stop[0]])
+        mesh.AddLine('y',[start[1],stop[1]])
 
 
         # apply the excitation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -2,6 +2,7 @@ import numpy as np
 from scipy.spatial import KDTree
 from patchAntenna import PatchAntenna
 from dipoleAntenna import DipoleAntenna
+from spiralAntenna import SpiralAntenna
 
 class AntennaArray():
     '''
@@ -138,6 +139,25 @@ class AntennaArray():
                 excite_=excite
             ))
         if orientation== 'z': self.zmax = 30
+
+    def initSpiralElements(self,r0,rmax,h,hs=0.5,epsr=4.5,alpha=0.32):
+        self.xmax = np.max(np.abs(self.xs)) + rmax
+        self.ymax = np.max(np.abs(self.ys)) + rmax
+        self.zmax = 3*h
+        for id in range(len(self.xs)):
+            excite = False
+            if id == self.excite_idx: excite = True
+            self.elements.append(SpiralAntenna(
+                id,
+                x_=self.xs[id],
+                y_=self.ys[id],
+                r0_=r0,
+                rmax_=rmax,
+                alpha_=alpha,
+                h_=h,
+                hs_=hs,
+                epsr_=epsr
+            ))
 
 
 
