@@ -17,9 +17,10 @@ def run_simulation(Nr_idx):
     results_dir = f'/results/nr{Nr}'
     cwd = os.getcwd()
     
-    ant_array.generateRPSPositions(fmax=6e9, r=1, Nrps=5)
+    ant_array.generateRPSPositions(fmax=6e9, r=1, Nrps=3)
     ant_array.excite_idx = idx
-    ant_array.initDipoleElements(freq, orientation='y')
+    ant_array.initDipoleElements(freq, orientation='z')
+    #ant_array.initSpiralElements(r0=1,rmax=10,h=10)
     tess_array = ant_array.getNearestNeighborSA(idx, Nr)
     
     theta = np.linspace(0, np.pi, 181)
@@ -56,9 +57,11 @@ def run_simulation(Nr_idx):
     del ant_array, tess_array
     rmtree(simdir, ignore_errors=True)
 
-Nrs = [4,6,8,10,12,14,16]
-Nr_idx_list = [(Nr, idx) for Nr in Nrs for idx in range(67)]
+Nrs1 = [[4],[6],[8],[10]]
+#Nrs1 = [[12],[14],[16],[18],[20],[24],[28],[32],[36]]
+for Nrs in Nrs1:
+    Nr_idx_list = [(Nr, idx) for Nr in Nrs for idx in range(37)]
 
-# Create a Pool of workers to run simulations in parallel
-with Pool(int(os.cpu_count()/4)) as pool:
-    pool.map(run_simulation, Nr_idx_list)
+    # Create a Pool of workers to run simulations in parallel
+    with Pool(int(os.cpu_count()/4)) as pool:
+        pool.map(run_simulation, Nr_idx_list)

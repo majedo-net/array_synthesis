@@ -66,6 +66,9 @@ class SpiralAntenna(Antenna):
         mesh.AddLine('x',[start[0],stop[0]])
         mesh.AddLine('y',[start[1],stop[1]])
 
+        mesh.SmoothMeshLines('x',max_res/2)
+        mesh.SmoothMeshLines('y',max_res/2)
+
 
         # apply the excitation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

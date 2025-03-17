@@ -35,14 +35,14 @@ run-tess:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=/home/ubuntu/results/tess/y/NP5:/results \
+	--volume=/home/ubuntu/results/tess/z:/results \
 	tessarray:latest
 
 run-full:
 	docker run -it --rm \
 	--user 1000 \
 	--net=host \
-	--volume=/home/ubuntu/results/tess/spiral:/results \
+	--volume=/home/ubuntu/results/tess/y/NP5/full:/results \
 	fullarray:latest
 
 run-ct:
