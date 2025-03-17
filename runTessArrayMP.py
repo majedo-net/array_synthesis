@@ -9,7 +9,7 @@ from simulation import Simulation
 def run_simulation(Nr_idx):
     Nr, idx = Nr_idx
     print('==================')
-    print(f'Running Element {idx} Tess Array')
+    print(f'Running Element {idx} Multithread Tess Array')
     print('==================')
     
     ant_array = AntennaArray()
@@ -33,10 +33,8 @@ def run_simulation(Nr_idx):
     os.chdir(cwd)
     
     nids = [el.id for el in sim.array.elements]
-    print(nids)
+    print(f'{idx}: {nids}')
     
-    #np.savetxt(f'{results_dir}/sm{idx}.txt', (nids, sim.smn[:, 151]))
-    #np.savetxt(f'{results_dir}/s11_{idx}.txt', (sim.sfreqs, sim.s11))
     # Save HDF5 results
     with h5py.File(f'{results_dir}/element{idx}.hdf5','w') as f:
         nids = f.create_dataset('nids',data=nids)
@@ -56,12 +54,16 @@ def run_simulation(Nr_idx):
     del sim
     del ant_array, tess_array
     rmtree(simdir, ignore_errors=True)
+    print('returned')
 
-Nrs1 = [[4],[6],[8],[10]]
+Nrs1 = [[2],[4],[6],[8],[10],[12],[14]]
 #Nrs1 = [[12],[14],[16],[18],[20],[24],[28],[32],[36]]
 for Nrs in Nrs1:
+    print(f'Starting Nrs = {Nrs}')
     Nr_idx_list = [(Nr, idx) for Nr in Nrs for idx in range(37)]
-
+    print(Nr_idx_list)
     # Create a Pool of workers to run simulations in parallel
     with Pool(int(os.cpu_count()/4)) as pool:
-        pool.map(run_simulation, Nr_idx_list)
+        pool.map_async(run_simulation, Nr_idx_list)
+        pool.close()
+        pool.join()

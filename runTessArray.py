@@ -7,7 +7,7 @@ from shutil import rmtree
 
 
 if __name__ == '__main__':
-    Nrs = [4,6,8,10,12,14,16]
+    Nrs = [4]
     for Nr in Nrs:
         for idx in range(37):
             print('==================')
