@@ -1,12 +1,18 @@
 clear; close all;
 
-L = 0.6;
-z = linspace(-L/2,L/2,201);
-f = 25e9;
+f = 15e9;
 lambda = 3e8/f;
 k = 2.*pi./lambda;
 
-th0 = deg2rad(60);
+f2 = 5e9;
+lambda2 = 3e8/f2;
+k2 = 2.*pi./lambda2;
+
+N = 7;
+z = linspace(-lambda*(N-1)/4,lambda*(N-1)/4,N);
+L = lambda*N;
+
+th0 = deg2rad(20);
 scanw = exp(1j.*k.*z.*cos(th0));
 
 %% Taylor one parameter distribution
@@ -24,12 +30,29 @@ for ii = 1:numel(Bs)
     Iz = besselj(0,Jarg);
     figure(1);
     plot(z,Iz./(max(Iz))); hold on;
+
+    Iznorm = Iz./max(Iz);
+    dn = (1./Iznorm).*lambda/2;
+    idx_middle = (N-1)/2 +1;
+    zn(idx_middle) = 0;
+    for idx=idx_middle+1:N
+        zn(idx) = zn(idx-1) + dn(idx);
+        opp_idx = 2*idx_middle - idx;
+        zn(opp_idx) = zn(opp_idx+1) - dn(opp_idx);
+    end
     
-    theta = linspace(0,pi,501);
+    theta = linspace(0,pi/2,501);
     
     AF = Iz*exp(-1j.*(k.*z.*sin(theta'-th0')))';
     AF = 20.*log10(abs(AF./max(AF)));
+    
+    AF2 = Iz*exp(-1j.*(k2.*z.*sin(theta'-th0')))';
+    AF2 = 20.*log10(abs(AF2./max(AF2)));
+
     figure(2);
+    plot(rad2deg(theta),AF2); hold on;
+
+    figure(3);
     plot(rad2deg(theta),AF); hold on;
 end
 
@@ -40,7 +63,17 @@ grid minor;
 legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB','Location','south');
 
 figure(2);
+title(sprintf('Frequency = %f',f2));
 xlabel('Theta');
 ylabel('Normalized Array Factor (dB)');
 grid minor;
+ylim([-50,0]);
+legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB','Location','south');
+
+figure(3);
+title(sprintf('Frequency = %f',f));
+xlabel('Theta');
+ylabel('Normalized Array Factor (dB)');
+grid minor;
+ylim([-50,0]);
 legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB','Location','south');

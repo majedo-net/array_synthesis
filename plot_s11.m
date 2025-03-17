@@ -1,11 +1,11 @@
 clear; close all;
 
-max_eid =36;
+max_eid = 36;
 figure;
 hold on;
 for id=0:max_eid
     %dat = fileread(sprintf('results/aws-tess-array/dipole/NP5/full/full_s11_%d.txt',id));
-    dat = fileread(sprintf('results/aws-tess-array/dipole/y/full/full_s11_%d.txt',id));
+    dat = fileread(sprintf('results/aws-tess-array/dipole/z/full/full_s11_%d.txt',id));
     dat = textscan(dat,'(%f)',602);
     dat = dat{1};
     freq = dat(1:301)./1e9;
