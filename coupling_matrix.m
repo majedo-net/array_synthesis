@@ -1,19 +1,23 @@
 clear; close all;
 %labels = ["Dipole Z 37", "Dipole Y 37","Dipole Y 67","Dipole Z 67","Spiral 37"];
-labels = ["Spiral 37"];
+labels = ["Z-Aligned Dipole","Y-Aligned Dipole"];
 %paths = ["dipole/z","dipole/y","dipole/y/NP5","dipole/z/NP5","spiral"];
-paths = ["spiral"];
+paths = ["dipole/z","dipole/y"];
 %elements=[37,37,67,67,37];
-elements=[37];
+elements=[37,37];
 nearest_neighbors = {};
 errors = {};
 plot_markers = ["ko-","bx-.","r^:","c*-.","m->"];
 
+times = [
+    [0.43 0.43 0.43 0.43 0.57 0.57 0.71 0.71 0.71 0.86 1 0.86 1.14 1] % z dipole
+    [0.33 0.33 0.33 0.44 0.56 0.67 0.56 0.78 0.78 0.78 1 0.89 1.11 1] % y dipole
+    ];
 
 for idx=1:numel(labels)
     fprintf('%s\n',labels(idx));
     if elements(idx) == 37
-        nearest_neighbors{end+1} = [4,6,8,10,12,14,16,18,20,24,28,32,36];
+        nearest_neighbors{end+1} = [2,4,6,8,10,12,14,16,18,20,24,28,32,36];
     elseif elements(idx) == 67
         nearest_neighbors{end+1} = [4,6,8,10,12,14,16,18,20,24,28,32,36,40,44,48,52,58,62,66];
     end
@@ -21,146 +25,62 @@ for idx=1:numel(labels)
 
     smn = zeros([elements(idx),301,elements(idx)]);
     smnf = zeros([elements(idx),301,elements(idx)]);
-
+    error = zeros(numel(nearest_neighbors{end}),1);
+    s11_error = zeros(numel(nearest_neighbors{end}),1);
     for nid=1:numel(nearest_neighbors{end})
         nr = nearest_neighbors{end}(nid);
         for edx = linspace(0,elements(idx)-1,elements(idx))
             sp = h5read(sprintf('results/aws-tess-array/%s/full/element%i.hdf5',paths(idx),edx),'/smn');
             sps = sp.r + 1j.*sp.i;
-            smnf(edx+1,:,:) = sps;
+            if any(abs(sps)>1,'all')
+                fprintf('SP error FULL: %i \n',edx);
+            end
+            neighb_id = h5read(sprintf('results/aws-tess-array/%s/full/element%i.hdf5',paths(idx),edx),'/nids');
+            smnf(edx+1,:,neighb_id+1) = sps;
+            clear sps;
             sps = h5read(sprintf('results/aws-tess-array/%s/nr%i/element%i.hdf5',paths(idx),nr,edx),'/smn');
             sps = sps.r + 1j.*sps.i;
+            smn_old = sps;
+            if any(abs(sps)>1,'all')
+                fprintf('SP error TESS: %i \n',edx);
+            end
             neighb_id = h5read(sprintf('results/aws-tess-array/%s/nr%i/element%i.hdf5',paths(idx),nr,edx),'/nids');
             smn(edx+1,:,neighb_id+1) = sps;
+            clear sps;
         end
+        error(nid) = sum(abs(abs(smnf(:,151,:))-abs(smn(:,151,:))),'all')./sum(abs(smnf(:,151,:)),'all');
+        error(nid) = error(nid) ./ elements(idx).^2;
+        s11_error(nid) = sum(abs(abs(diag(squeeze(smnf(:,151,:)))) - abs(diag(squeeze(smn(:,151,:))))),'all')./sum(abs(diag(squeeze(smnf(:,151,:)))),'all');
+        s11_error(nid) = s11_error(nid) ./ elements(idx);
+        delta = abs(abs(smnf(:,151,:)) - abs(smn(:,151,:)));
+        delta = squeeze(delta);
+        %heatmap(delta);
+
     end
-    % plot errors here
+    %plot errors here
     disp('Plots');
     figure(idx);
-    title(labels(idx));
-    delta = abs(smnf(:,151,:)) - abs(smn(:,151,:));
-    delta = squeeze(delta);
-    heatmap(delta);
+    grid minor;
+    xlabel('Nearest Neighbors N_r');
+    yyaxis left;
+    plot(nearest_neighbors{end},error,'k-o');
+    hold on;
+    %plot(nearest_neighbors{end},s11_error,'k-.s');
+    
+    ax = gca;
+    ax.YColor = 'k';
+    ylabel('Error \epsilon');
+    yyaxis right;
+    plot(nearest_neighbors{end},times(idx,:),'b-^');
+    %legend('Full','Computation Time');
+    ax = gca;
+    ax.YColor = 'b';
+    ylabel('Computation Time/t(N_r = 36)');
+    title(labels{idx});
+%     figure((2+(idx-1)*2));
+%     title(labels(idx));
+%     delta = abs(smnf(:,151,:)) - abs(smn(:,151,:));
+%     delta = squeeze(delta);
+%     heatmap(delta);
 
 end
-% %% Dipole Z
-% smn = zeros([37,301,37]);
-% smnf = zeros([37,301,37]);
-% nrsd = [4,6,8,10,12,14,16,18,20,24,28,32,36];
-% nfd = [];
-% nfd_error = zeros([numel(nrsd) 37 37]);
-% for nid=1:numel(nrsd)
-%     nr = nrsd(nid);
-%     for idx = linspace(0,36,37)
-%         sp = h5read(sprintf('results/aws-tess-array/dipole/z/full/element%i.hdf5',idx),'/smn');
-%         sps = sp.r + 1j.*sp.i;
-%         smnf(idx+1,:,:) = sps;
-%         sps = h5read(sprintf('results/aws-tess-array/dipole/z/nr%i/element%i.hdf5',nr,idx),'/smn');
-%         sps = sps.r + 1j.*sps.i;
-%         neighb_id = h5read(sprintf('results/aws-tess-array/dipole/z/nr%i/element%i.hdf5',nr,idx),'/nids');
-%         smn(idx+1,:,neighb_id+1) = sps;
-%     end
-%     % sum errors across frequency
-%     errors = abs(smnf-smn);
-%     norm_smnf = abs(smnf);
-%     
-%     nfd(end+1) = norm(abs(smnf(:)-smn(:))./abs(max(smnf(:),[],2)),'fro')/(idx+1);
-%     %nfd_error(nid,:,:) = abs(smnf(:)-smn)./abs(max(smnf,[],2));
-% end
-% 
-% %% Dipole Y
-% smn = zeros([37,37]);
-% smnf = zeros([37,37]);
-% nrsdy = [4,6,8,10,12,14,16,18,20,24,28,32,36];
-% nfdy = [];
-% nfdy_error = zeros([numel(nrsdy) 37 37]);
-% for nid=1:numel(nrsdy)
-%     nr = nrsdy(nid);
-%     for idx = linspace(0,36,37)
-%         sp = h5read(sprintf('results/aws-tess-array/dipole/y/full/element%i.hdf5',idx),'/smn');
-%         sps = sp.r(151,:) + 1j.*sp.i(151,:);
-%         smnf(idx+1,:) = sps;
-%         sps = h5read(sprintf('results/aws-tess-array/dipole/y/nr%i/element%i.hdf5',nr,idx),'/smn');
-%         sps = sps.r(151,:) + 1j.*sps.i(151,:);
-%         neighb_id = h5read(sprintf('results/aws-tess-array/dipole/y/nr%i/element%i.hdf5',nr,idx),'/nids');
-%         smn(idx+1,neighb_id+1) = sps;
-%     end
-%     nfdy(end+1) = norm(abs(smnf-smn)./abs(max(smnf,[],2)),'fro')/(idx+1);
-%     nfdy_error(nid,:,:) = abs(smnf-smn)./abs(max(smnf,[],2));
-% end
-% 
-% %% 67 z dipole
-% smn = zeros([67,67]);
-% smnf = zeros([67,67]);
-% nrsd67 = [4,6,8,10,12,14,16,18,20,24,28,32,36,40,44,48,52,58,62,66];
-% nfd67 = [];
-% nfd67_error = zeros([numel(nrsd67) 67 67]);
-% for nid=1:numel(nrsd67)
-%     nr = nrsd67(nid);
-%     for idx = linspace(0,66,67)
-%         sp = h5read(sprintf('results/aws-tess-array/dipole/z/NP5/full/element%i.hdf5',idx),'/smn');
-%         sps = sp.r(151,:) + 1j.*sp.i(151,:);
-%         smnf(idx+1,:) = sps;
-%         sps = h5read(sprintf('results/aws-tess-array/dipole/z/NP5/nr%i/element%i.hdf5',nr,idx),'/smn');
-%         sps = sps.r(151,:) + 1j.*sps.i(151,:);
-%         neighb_id = h5read(sprintf('results/aws-tess-array/dipole/z/NP5/nr%i/element%i.hdf5',nr,idx),'/nids');
-%         smn(idx+1,neighb_id+1) = sps;
-%     end
-%     nfd67(end+1) = norm(abs(smnf-smn)./abs(max(smnf,[],2)),'fro')/(idx+1);
-%     %nfd67_error(nid,:,:) = abs(smnf-smn)./abs(max(smnf,[],2));
-% end
-% 
-% %% 67 y dipole
-% smn = zeros([67,67]);
-% smnf = zeros([67,67]);
-% nrsdy67 = [4,6,8,10,12,14,16,20,24,28,32,36,40,44,48,52,58,62,66];
-% nfdy67 = [];
-% nfdy67_error = zeros([numel(nrsdy67) 67 67]);
-% for nid=1:numel(nrsdy67)
-%     nr = nrsdy67(nid);
-%     for idx = linspace(0,66,67)
-%         sp = h5read(sprintf('results/aws-tess-array/dipole/y/NP5/full/element%i.hdf5',idx),'/smn');
-%         sps = sp.r(151,:) + 1j.*sp.i(151,:);
-%         smnf(idx+1,:) = sps;
-%         sps = h5read(sprintf('results/aws-tess-array/dipole/y/NP5/nr%i/element%i.hdf5',nr,idx),'/smn');
-%         sps = sps.r(151,:) + 1j.*sps.i(151,:);
-%         neighb_id = h5read(sprintf('results/aws-tess-array/dipole/y/NP5/nr%i/element%i.hdf5',nr,idx),'/nids');
-%         smn(idx+1,neighb_id+1) = sps;
-%     end
-%     nfdy67(end+1) = norm(abs(smnf-smn)./abs(max(smnf,[],2)),'fro')/(idx+1);
-%     nfdy67_error(nid,:,:) = abs(smnf-smn)./abs(max(smnf,[],2));
-% end
-% 
-% %%  37 spiral
-% smn = zeros([37,37]);
-% smnf = zeros([37,37]);
-% nrsd = [4,6,8,10,12,14,16,18,20,24,28,32,36];
-% nfds = [];
-% nfds_error = zeros([numel(nrsd) 37 37]);
-% for nid=1:numel(nrsd)
-%     nr = nrsd(nid);
-%     for idx = linspace(0,36,37)
-%         sp = h5read(sprintf('results/aws-tess-array/spiral/full/element%i.hdf5',idx),'/smn');
-%         sps = sp.r(151,:) + 1j.*sp.i(151,:);
-%         smnf(idx+1,:) = sps;
-%         sps = h5read(sprintf('results/aws-tess-array/spiral/nr%i/element%i.hdf5',nr,idx),'/smn');
-%         sps = sps.r(151,:) + 1j.*sps.i(151,:);
-%         neighb_id = h5read(sprintf('results/aws-tess-array/spiral/nr%i/element%i.hdf5',nr,idx),'/nids');
-%         smn(idx+1,neighb_id+1) = sps;
-%     end
-%     nfds(end+1) = norm(abs(smnf-smn)./abs(max(smnf,[],2)),'fro')/(idx+1);
-%     nfds_error(nid,:,:) = abs(smnf-smn)./abs(max(smnf,[],2));
-% end
-% 
-% %plot(nrsp,nfp/2,'bs-'); hold on;
-% plot(nrsd,nfd.*100,'ko-'); hold on;
-% plot(nrsdy,nfdy.*100,'bx-.');
-% plot(nrsd67,nfd67.*100,'r^:');
-% plot(nrsdy67,nfdy67.*100,'c*-.');
-% %plot(nrsd,nfds.*100,'m->');
-% grid minor;
-% xlim([2 68]);
-% %ylim([0 100]);
-% xlabel('$N_R$ Nearest Neighbors','Interpreter','latex');
-% ylabel('$100\times\left|\frac{|S_f - S_t|}{|S_f|}\right|_F$','Interpreter','latex');
-% legend('Z Dipole 37','Y Dipole 37', 'Z Dipole 67', 'Y Dipole 67');%,'Spiral');
