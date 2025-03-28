@@ -8,7 +8,7 @@ f2 = 5e9;
 lambda2 = 3e8/f2;
 k2 = 2.*pi./lambda2;
 
-N = 51;
+N = 25;
 z = linspace(-lambda*(N-1)/4,lambda*(N-1)/4,N);
 L = lambda*N;
 
@@ -22,14 +22,14 @@ scanw = exp(1j.*k.*z.*cos(th0));
 %   1.0229      25          0.995
 %   1.7415      40          0.709
 %%
-Bs =[0, 0.7386,1.0229,1.7415];
-
+%Bs =[0, 0.7386,1.0229,1.7415];
+Bs = [1.7415];
 for ii = 1:numel(Bs)
     B = Bs(ii);
     Jarg = 1j.*pi.*B.*sqrt(1-(2.*z./L).^2);
     Iz = besselj(0,Jarg);
     figure(1);
-    plot(z,Iz./(max(Iz))); hold on;
+    plot(z/lambda,Iz./(max(Iz))); hold on;
 
     Iznorm = Iz./max(Iz);
     dn = (1./Iznorm).*lambda/2;
@@ -40,7 +40,7 @@ for ii = 1:numel(Bs)
         opp_idx = 2*idx_middle - idx;
         zn(opp_idx) = zn(opp_idx+1) - dn(opp_idx);
     end
-    scatter(zn',ii./4,'filled');
+    scatter(zn/lambda,0.5,'filled','k');
     theta = linspace(0,pi/2,501);
     
     AF = Iz*exp(-1j.*(k.*zn.*sin(theta'-th0')))';
@@ -57,23 +57,27 @@ for ii = 1:numel(Bs)
 end
 
 figure(1);
-xlabel('Radial Position (m)');
-ylabel('Amplitude Coefficient');
+f = gcf();
+f.Position = [100 100 700 500];
+xlabel('Position in Wavelengths (\lambda)');
+ylabel('Normalized Current Distribution');
 grid minor;
-legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB');
+ylim([0.4 1]);
+legend('Excitation Current','Element Positions');
+%legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB');
 
 figure(2);
-title(sprintf('Frequency = %f GHz',f2/1e9));
-xlabel('Theta');
+%title(sprintf('Frequency = %f GHz',f2/1e9));
+xlabel('\theta');
 ylabel('Normalized Array Factor (dB)');
 grid minor;
 ylim([-50,0]);
-legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB');
+%legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB');
 
 figure(3);
-title(sprintf('Frequency = %f GHz',f/1e9));
-xlabel('Theta');
+title(sprintf('Frequency = %f GHz',f./1e9));
+xlabel('\theta');
 ylabel('Normalized Array Factor (dB)');
 grid minor;
 ylim([-50,0]);
-legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB','Location','south');
+%legend('SLL = 13.26dB','SLL=20dB','SLL=25dB','SLL=40dB','Location','south');
